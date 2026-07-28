@@ -5,7 +5,7 @@ import java.util.Observable;
 
 
 /** The state of a game of 2048.
- *  @author TODO: YOUR NAME HERE
+ *  @author DrAgOn
  */
 public class Model extends Observable {
     /** Current contents of the board. */
@@ -109,14 +109,57 @@ public class Model extends Observable {
     public boolean tilt(Side side) {
         boolean changed;
         changed = false;
-
-        // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
+        board.setViewingPerspective(side);
+
+        if(moveTogether()) {
+            changed = true;
+        }
+
+        int size = board.size();
+        for(int col = 0; col < size; col++) {
+            for(int row = Math.max(size - 2, 0); row >= 0; row--) {
+                if(board.tile(col, row) != null && board.tile(col, row + 1) != null) {
+                    if(board.tile(col, row + 1).value() == board.tile(col, row).value()) {
+                        Tile t = board.tile(col, row);
+                        board.move(col, row + 1, t);
+                        score += board.tile(col, row + 1).value();
+                        changed = true;
+                    }
+                }
+            }
+        }
+
+        if(moveTogether()) {
+            changed = true;
+        }
+
+        board.setViewingPerspective(Side.NORTH);
 
         checkGameOver();
         if (changed) {
             setChanged();
+        }
+        return changed;
+    }
+
+    private boolean moveTogether() {
+        boolean changed =false;
+        int size = board.size();
+        for(int col = 0; col < size; col++) {
+            for(int row = Math.max(size - 2, 0); row >= 0; row--) {
+                if(board.tile(col, row) != null) {
+                    for(int i = size - 1; i > row; i--) {
+                        if(board.tile(col, i) == null) {
+                            Tile t = board.tile(col, row);
+                            board.move(col, i, t);
+                            changed = true;
+                            break;
+                        }
+                    }
+                }
+            }
         }
         return changed;
     }
