@@ -65,8 +65,8 @@ public class ArrayDeque<T> {
     public T removeLast() {
         T returnItem;
         if (size > 0) {
-            returnItem = items[(nextLast - 1 + 8) % items.length];
-            nextLast = (nextLast - 1 + 8) % items.length;
+            returnItem = items[(nextLast - 1 + items.length) % items.length];
+            nextLast = (nextLast - 1 + items.length) % items.length;
             size--;
         } else {
             returnItem = null;
@@ -77,8 +77,8 @@ public class ArrayDeque<T> {
         return returnItem;
     }
 
-    private void resize(int size) {
-        T[] a = (T[]) new Object[size];
+    private void resize(int newSize) {
+        T[] a = (T[]) new Object[newSize];
         int p = (nextFirst + 1) % items.length;
         int i = 1;
         while (p != nextLast) {
