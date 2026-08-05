@@ -1,6 +1,8 @@
 package deque;
 
-public class ArrayDeque<T> implements Deque<T> {
+import java.util.Iterator;
+
+public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     private int size;
     private T[] items;
     private int nextFirst;
@@ -41,7 +43,7 @@ public class ArrayDeque<T> implements Deque<T> {
     @Override
     public void printDeque() {
         int p = (nextFirst + 1) % items.length;
-        while(p != nextLast){
+        while (p != nextLast) {
             System.out.println(items[p]);
             p = (p + 1) % items.length;
         }
@@ -99,5 +101,61 @@ public class ArrayDeque<T> implements Deque<T> {
             return null;
         }
         return items[(nextFirst + 1 + index) % items.length];
+    }
+
+    public Iterator<T> iterator() {
+        return new DequeIterator();
+    }
+
+    private class DequeIterator implements Iterator<T> {
+        private int wizPos;
+
+        public DequeIterator() {
+            wizPos = 0;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return wizPos < size();
+        }
+
+        @Override
+        public T next() {
+            T returnItem = get(wizPos);
+            wizPos += 1;
+            return returnItem;
+        }
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null) {
+            return false;
+        }
+        if (!(o instanceof Deque)) {
+            return false;
+        }
+        ArrayDeque<T> other = (ArrayDeque<T>) o;
+        if (this.size() != other.size()) {
+            return false;
+        }
+        Iterator<T> thisIt = this.iterator();
+        Iterator<T> otherIt = other.iterator();
+
+        while (thisIt.hasNext() && otherIt.hasNext()) {
+            T itemThis = thisIt.next();
+            T itemOther = otherIt.next();
+
+            if (itemThis == null) {
+                if (itemOther != null) {
+                    return false;
+                }
+            } else if (!itemThis.equals(itemOther)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

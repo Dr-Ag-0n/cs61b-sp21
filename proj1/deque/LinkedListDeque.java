@@ -1,6 +1,8 @@
 package deque;
 
-public class LinkedListDeque<T> implements Deque<T> {
+import java.util.Iterator;
+
+public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
     private class Node {
         T item;
         Node next;
@@ -97,7 +99,63 @@ public class LinkedListDeque<T> implements Deque<T> {
         if (index == 0) {
             return p.item;
         } else {
-            return getRecursivehelper(p.next, index -1);
+            return getRecursivehelper(p.next, index - 1);
         }
+    }
+
+    public Iterator<T> iterator() {
+        return new DequeIterator();
+    }
+
+    private class DequeIterator implements Iterator<T> {
+        private int wizPos;
+
+        public DequeIterator() {
+            wizPos = 0;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return wizPos < size();
+        }
+
+        @Override
+        public T next() {
+            T returnItem = get(wizPos);
+            wizPos += 1;
+            return returnItem;
+        }
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null) {
+            return false;
+        }
+        if (!(o instanceof Deque)) {
+            return false;
+        }
+        LinkedListDeque<T> other = (LinkedListDeque<T>) o;
+        if (this.size() != other.size()) {
+            return false;
+        }
+        Iterator<T> thisIt = this.iterator();
+        Iterator<T> otherIt = other.iterator();
+
+        while (thisIt.hasNext() && otherIt.hasNext()) {
+            T itemThis = thisIt.next();
+            T itemOther = otherIt.next();
+
+            if (itemThis == null) {
+                if (itemOther != null) {
+                    return false;
+                }
+            } else if (!itemThis.equals(itemOther)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
