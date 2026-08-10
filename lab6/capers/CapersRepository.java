@@ -35,7 +35,7 @@ public class CapersRepository {
             CAPERS_FOLDER.mkdir();
         }
         if (!Dog.DOG_FOLDER.exists()) {
-            CAPERS_FOLDER.mkdir();
+            Dog.DOG_FOLDER.mkdir();
         }
     }
 
@@ -63,6 +63,7 @@ public class CapersRepository {
     public static void makeDog(String name, String breed, int age) {
         Dog dog = new Dog(name, breed, age);
         dog.saveDog();
+        System.out.println(dog.toString());
     }
 
     /**
