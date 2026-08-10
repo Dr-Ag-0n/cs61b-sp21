@@ -43,9 +43,8 @@ public class CapersRepository {
         File storyFile = Utils.join(CAPERS_FOLDER, "story");
         if (storyFile.exists()) {
             String preText = readContentsAsString(storyFile);
-            text = preText + text;
+            text = preText + "\n" + text;
         }
-        text = text + "\n";
         Utils.writeContents(storyFile, text);
         String readText = readContentsAsString(storyFile);
         System.out.println(readText);
