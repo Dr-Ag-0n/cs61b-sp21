@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
-    private node tree;
+    private node Item;
     private int size;
     private BSTMap left;
     private BSTMap right;
@@ -25,7 +25,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     }
 
     public BSTMap() {
-        tree = new node();
+        Item = new node();
         left = null;
         right = null;
         size = 0;
@@ -33,7 +33,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     @Override
     public void clear() {
-        tree = new node();
+        Item = new node();
         left = null;
         right = null;
         size = 0;
@@ -41,11 +41,11 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     @Override
     public boolean containsKey(K key) {
-        if (tree.key != null) {
-            if (key.equals(tree.key)) {
+        if (Item.key != null) {
+            if (key.equals(Item.key)) {
                 return true;
             }
-            if (key.compareTo(tree.key) < 0) {
+            if (key.compareTo(Item.key) < 0) {
                 if (left != null) {
                     return left.containsKey(key);
                 }
@@ -60,11 +60,11 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     @Override
     public V get(K key) {
-        if (tree.key != null) {
-            if (key.equals(tree.key)) {
-                return tree.value;
+        if (Item.key != null) {
+            if (key.equals(Item.key)) {
+                return Item.value;
             }
-            if (key.compareTo(tree.key) < 0) {
+            if (key.compareTo(Item.key) < 0) {
                 if (left != null) {
                     return (V) left.get(key);
                 }
@@ -86,13 +86,14 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     public void put(K key, V value) {
         if (size == 0) {
             node newNode = new node(key, value);
-            tree = newNode;
+            Item = newNode;
         } else {
-            if (key.compareTo(tree.key) < 0) {
+            if (key.compareTo(Item.key) < 0) {
                 if (left == null) {
                     node newNode = new node(key, value);
                     left = new BSTMap();
-                    left.tree = newNode;
+                    left.Item = newNode;
+                    left.size += 1;
                 } else {
                     left.put(key, value);
                 }
@@ -100,7 +101,8 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
                 if (right == null) {
                     node newNode = new node(key, value);
                     right = new BSTMap();
-                    right.tree = newNode;
+                    right.Item = newNode;
+                    right.size += 1;
                 } else {
                     right.put(key, value);
                 }
@@ -130,5 +132,15 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     }
 
     public void printInOrder() {
+        printHelper(this, 0);
+    }
+
+    private void printHelper(BSTMap t, int index) {
+        if (t == null) {
+            return;
+        }
+        printHelper(t.left, index + 1);
+        System.out.println(" ".repeat(2 * index)  + t.Item.key);
+        printHelper(t.right, index + 1);
     }
 }
