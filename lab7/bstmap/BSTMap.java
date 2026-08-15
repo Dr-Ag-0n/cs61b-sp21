@@ -4,77 +4,81 @@ import java.util.Iterator;
 import java.util.Set;
 
 public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
-    private node Item;
+    private Node<K, V> root;
     private int size;
-    private BSTMap left;
-    private BSTMap right;
 
-    private class node {
+    private static class Node<K, V> {
         K key;
         V value;
+        Node<K, V> left;
+        Node<K, V> right;
 
-        public node() {
+        Node() {
             key = null;
             value = null;
+            left = null;
+            right = null;
         }
 
-        public node(K k, V v) {
+        Node(K k, V v) {
             key = k;
             value = v;
+            left = null;
+            right = null;
         }
     }
 
     public BSTMap() {
-        Item = new node();
-        left = null;
-        right = null;
+        root = new Node<>();
         size = 0;
     }
 
     @Override
     public void clear() {
-        Item = new node();
-        left = null;
-        right = null;
+        root = new Node<>();
         size = 0;
     }
 
     @Override
     public boolean containsKey(K key) {
-        if (Item.key != null) {
-            if (key.equals(Item.key)) {
-                return true;
-            }
-            if (key.compareTo(Item.key) < 0) {
-                if (left != null) {
-                    return left.containsKey(key);
-                }
-            } else {
-                if (right != null) {
-                    return right.containsKey(key);
-                }
-            }
+        if (size == 0) {
+            return false;
         }
-        return false;
+        return containsKeyHelper(root, key);
+    }
+
+    private boolean containsKeyHelper(Node<K, V> n, K key) {
+        if (n == null) {
+            return false;
+        }
+        if (key.equals(n.key)) {
+            return true;
+        } else if (key.compareTo(n.key) < 0) {
+            return containsKeyHelper(n.left, key);
+        } else {
+            return containsKeyHelper(n.right, key);
+        }
     }
 
     @Override
     public V get(K key) {
-        if (Item.key != null) {
-            if (key.equals(Item.key)) {
-                return Item.value;
-            }
-            if (key.compareTo(Item.key) < 0) {
-                if (left != null) {
-                    return (V) left.get(key);
-                }
-            } else {
-                if (right != null) {
-                    return (V) right.get(key);
-                }
-            }
+        if (size == 0) {
+            return null;
         }
-        return null;
+        return getHelper(root, key);
+    }
+
+    private V getHelper(Node<K, V> n, K key) {
+        if (n == null) {
+            return null;
+        }
+        if (key.equals(n.key)) {
+            return n.value;
+        } else if (key.compareTo(n.key) < 0) {
+            return getHelper(n.left, key);
+        } else {
+            return getHelper(n.right, key);
+        }
     }
 
     @Override
@@ -85,30 +89,33 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     @Override
     public void put(K key, V value) {
         if (size == 0) {
-            node newNode = new node(key, value);
-            Item = newNode;
+            Node<K, V> newNode = new Node<>(key, value);
+            root = newNode;
+            size += 1;
         } else {
-            if (key.compareTo(Item.key) < 0) {
-                if (left == null) {
-                    node newNode = new node(key, value);
-                    left = new BSTMap();
-                    left.Item = newNode;
-                    left.size += 1;
-                } else {
-                    left.put(key, value);
-                }
-            } else {
-                if (right == null) {
-                    node newNode = new node(key, value);
-                    right = new BSTMap();
-                    right.Item = newNode;
-                    right.size += 1;
-                } else {
-                    right.put(key, value);
-                }
-            }
+            putHelper(root, key, value);
         }
-        size += 1;
+    }
+
+    private void putHelper(Node<K, V> n, K key, V value) {
+        if (key.equals(n.key)) {
+            n.value = value;
+            return;
+        } else if (key.compareTo(n.key) < 0) {
+            if (n.left == null) {
+                n.left = new Node<>(key, value);
+                size += 1;
+                return;
+            }
+            putHelper(n.left, key, value);
+        } else {
+            if (n.right == null) {
+                n.right = new Node<>(key, value);
+                size += 1;
+                return;
+            }
+            putHelper(n.right, key, value);
+        }
     }
 
     @Override
@@ -132,15 +139,14 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     }
 
     public void printInOrder() {
-        printHelper(this, 0);
+        printInOrderHelper(root, 0);
     }
 
-    private void printHelper(BSTMap t, int index) {
-        if (t == null) {
-            return;
+    private void printInOrderHelper(Node n, int index) {
+        if (n != null) {
+            printInOrderHelper(n.left, index + 1);
+            System.out.println(" ".repeat(2 * index) + n.key);
+            printInOrderHelper(n.right, index + 1);
         }
-        printHelper(t.left, index + 1);
-        System.out.println(" ".repeat(2 * index)  + t.Item.key);
-        printHelper(t.right, index + 1);
     }
 }
