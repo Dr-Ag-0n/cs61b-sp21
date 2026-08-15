@@ -147,7 +147,8 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     @Override
     public Iterator<K> iterator() {
-        throw new UnsupportedOperationException();
+        Set<K> set = this.keySet();
+        return set.iterator();
     }
 
     public void printInOrder() {
