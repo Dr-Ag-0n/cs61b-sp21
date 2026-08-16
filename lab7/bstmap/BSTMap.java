@@ -137,12 +137,73 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     @Override
     public V remove(K key) {
-        throw new UnsupportedOperationException();
+        if (size == 0 || !containsKey(key)) {
+            return null;
+        }
+        V value = this.get(key);
+        root = removeHelper(root, key);
+        return value;
     }
 
     @Override
     public V remove(K key, V value) {
-        throw new UnsupportedOperationException();
+        if (get(key) != value) {
+            return null;
+        } else {
+            V v = remove(key);
+            return v;
+        }
+    }
+
+    private int childNum(Node<K, V> n) {
+        int num = 0;
+        if (n.left != null) {
+            num += 1;
+        }
+        if (n.right != null) {
+            num += 1;
+        }
+        return num;
+    }
+
+    private Node<K, V> removeHelper(Node<K, V> n, K key) {
+        Node<K, V> returnNode = n;
+        if (n == null) {
+            returnNode = null;
+        } else if (key.equals(n.key)) {
+            size -= 1;
+            if (childNum(n) == 0) {
+                returnNode = null;
+            } else if (childNum(n) == 1) {
+                if (n.left == null) {
+                    returnNode = n.right;
+                } else {
+                    returnNode = n.left;
+                }
+            } else if (childNum(n) == 2) {
+                Node<K, V> pre = findPre(n);
+                Node<K, V> node = removeHelper(n, pre.key);
+                pre.left = node.left;
+                pre.right = node.right;
+                returnNode = pre;
+            }
+        } else {
+            n.left = removeHelper(n.left, key);
+            n.right = removeHelper(n.right, key);
+            returnNode = n;
+        }
+        return returnNode;
+    }
+
+    private Node<K, V> findPre(Node<K, V> n) {
+        Node<K, V> node = n;
+        if (node.left != null) {
+            node = node.left;
+        }
+        while (node.right != null) {
+            node = node.right;
+        }
+        return node;
     }
 
     @Override
@@ -155,7 +216,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         printInOrderHelper(root, 0);
     }
 
-    private void printInOrderHelper(Node n, int index) {
+    private void printInOrderHelper(Node<K, V> n, int index) {
         if (n != null) {
             printInOrderHelper(n.left, index + 1);
             System.out.println(" ".repeat(2 * index) + n.key);
