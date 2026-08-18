@@ -191,12 +191,34 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
 
     @Override
     public V remove(K key) {
-        throw new UnsupportedOperationException();
+        if (!containsKey(key)) {
+            return null;
+        }
+        int hashValue = getHashValue(key);
+        Node removeNode = removeHelper(key);
+        buckets[hashValue].remove(removeNode);
+        return removeNode.value;
     }
 
     @Override
     public V remove(K key, V value) {
-        throw new UnsupportedOperationException();
+        if (get(key) != value) {
+            return null;
+        }
+        int hashValue = getHashValue(key);
+        Node removeNode = removeHelper(key);
+        buckets[hashValue].remove(removeNode);
+        return removeNode.value;
+    }
+
+    private Node removeHelper(K key) {
+        int hashValue = getHashValue(key);
+        for (Node n : buckets[hashValue]) {
+            if (n.key.equals(key)) {
+                return n;
+            }
+        }
+        return null;
     }
 
     @Override
