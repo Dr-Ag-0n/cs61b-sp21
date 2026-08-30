@@ -28,6 +28,10 @@ public class Repository {
     public static final File GITLET_DIR = join(CWD, ".gitlet");
     /** The directory to store commits */
     public static final File COMMITS_DIR = join(GITLET_DIR, "Commits");
+    /** The directory of staging area */
+    public static final File STAGING_DIR = join(GITLET_DIR, "Staging_Area");
+    public static final File STAGED_FOR_ADDITION = join(STAGING_DIR, "Staged_for_addition");
+    public static final File STAGED_FOR_REMOVAL = join(STAGING_DIR, "Staged_for_removal");
 
     /* TODO: fill in the rest of this class. */
     public static void initialize() {
@@ -35,6 +39,9 @@ public class Repository {
         if (!GITLET_DIR.exists()) {
             GITLET_DIR.mkdir();
             COMMITS_DIR.mkdir();
+            STAGING_DIR.mkdir();
+            STAGED_FOR_ADDITION.mkdir();
+            STAGED_FOR_REMOVAL.mkdir();
         } else {
             System.out.println("A Gitlet version-control system already exists in the current directory.");
             System.exit(0);
@@ -42,6 +49,8 @@ public class Repository {
 
         /* Create initial commit */
         Commit initCommit = new Commit("initial commit", "00:00:00 UTC, Thursday, 1 January 1970", null);
+        Commit HEAD = initCommit;
+        Commit Master = initCommit;
         File commit0 = join(COMMITS_DIR, "Commit0");
         writeObject(commit0, initCommit);
     }
