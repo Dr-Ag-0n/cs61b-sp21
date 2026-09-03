@@ -2,6 +2,7 @@ package gitlet;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import static gitlet.Utils.*;
@@ -41,7 +42,9 @@ public class Repository {
     private static int addCnt = 0;
     /** Head pointer and Master branch */
     public static Commit HEAD;
-    public static Commit Master;
+    public static Commit Master; // TODO: still not used
+    /** current commit count */
+    public static int commitCnt = 0;
 
     /* TODO: fill in the rest of this class. */
     public static void initialize() {
@@ -60,8 +63,8 @@ public class Repository {
 
         /* Create initial commit */
         Commit initCommit = new Commit("initial commit", "00:00:00 UTC, Thursday, 1 January 1970", null);
-        Commit HEAD = initCommit;
-        Commit Master = initCommit;
+        HEAD = initCommit;
+        Master = initCommit;
         File commit0 = join(COMMITS_DIR, "Commit0");
         writeObject(commit0, initCommit);
     }
@@ -74,7 +77,10 @@ public class Repository {
         }
         /* Write file into blob */
         File blob = join(BLOBS_DIR, "blob" + blobsCnt);
-        writeObject(addFile, blob);
+        writeObject(blob, addFile);
+        /* Read the current commit */
+        File cur = join(COMMITS_DIR, "Commit" + commitCnt);
+        readCommit(cur);
         /* Compare file's hash code with current commit's file */
         Object curBlob = HEAD.returnTrack(fileName);
         if (curBlob != null) {
@@ -82,10 +88,16 @@ public class Repository {
                 return;
             }
         }
-        Map<String, Object> track = null;
+        Map<String, Object> track = new HashMap<>();
         track.put(fileName, blob);
         /* Staged for addition */
-        File addition = join(STAGING_DIR, "addition" + addCnt);
+        File addition = join(STAGED_FOR_ADDITION, "addition" + addCnt);
         writeObject(addition, (Serializable) track);
+    }
+
+    public static Commit readCommit(File com) {
+        Commit commit = readObject(com, Commit.class);
+        HEAD = commit;
+        return commit;
     }
 }

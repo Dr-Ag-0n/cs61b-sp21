@@ -5,6 +5,7 @@ package gitlet;
 import java.io.File;
 import java.io.Serializable;
 import java.util.Date; // TODO: You'll likely use this in this class
+import java.util.HashMap;
 import java.util.Map;
 
 /** Represents a gitlet commit object.
@@ -36,7 +37,7 @@ public class Commit implements Serializable {
         message = m;
         timeStamp = t;
         parentCommit = p;
-        tracts = null;
+        tracts = new HashMap<>();
     }
 
     public void track(String fileName, Object blob) {
@@ -44,6 +45,12 @@ public class Commit implements Serializable {
     }
 
     public Object returnTrack(String fileName) {
-        return tracts.get(fileName);
+        Object returnItem;
+        if (tracts != null) {
+            returnItem = tracts.get(fileName);
+        } else {
+            returnItem = null;
+        }
+        return returnItem;
     }
 }
