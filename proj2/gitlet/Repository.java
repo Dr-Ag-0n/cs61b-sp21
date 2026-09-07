@@ -2,8 +2,6 @@ package gitlet;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import static gitlet.Utils.*;
 
@@ -57,9 +55,11 @@ public class Repository implements Serializable {
         String commitHash = sha1(serialize(initCommit));
         File commit = join(COMMITS_DIR, commitHash);
         writeObject(commit, initCommit);
-        /* Save HEAD information */
+        /* Save HEAD and MASTER information */
         File head = join(GITLET_DIR, "HEAD");
         writeContents(head, commitHash);
+        File master = join(GITLET_DIR, "MASTER");
+        writeObject(master, commitHash);
     }
 
     public static void add(String fileName) {
@@ -72,24 +72,32 @@ public class Repository implements Serializable {
         byte[] blobContents = readContents(addFile);
         String blobHash = sha1(blobContents);
         File blob = join(BLOBS_DIR, blobHash);
-        writeObject(blob, addFile);
-        /* Read the current commit */
+        writeObject(blob, sha1(addFile));
+        /* Staged for addition */
+        File addition = join(STAGED_FOR_ADDITION, fileName);
+        /*
+         * If the addition track already exists,
+         * delete the previous saved blob.
+         */
+        if (addition.exists()) {
+            String removalBlobHash = readContentsAsString(addition);
+            File removalBlob = join(BLOBS_DIR, removalBlobHash);
+            restrictedDelete(removalBlob);
+        }
+        writeContents(addition, blobHash);
+        /*
+         * Compare file's hash code with current commit's file,
+         * remove the addition if current blob is the same as the current commit's.
+         */
         File head = join(GITLET_DIR, "HEAD");
         String curCommitHash = readContentsAsString(head);
         File cur = join(COMMITS_DIR, curCommitHash);
         Commit curCommit = readObject(cur, Commit.class);
-        /* Compare file's hash code with current commit's file */
-        Object curBlob = curCommit.returnTrack(fileName);
+        String curBlob = curCommit.returnBlob(sha1(fileName));
         if (curBlob != null) {
-            if (sha1(blob).equals(sha1(curBlob))) {
-                return;
+            if (curBlob.equals(blobHash)) {
+
             }
         }
-        Map<String, Object> track = new HashMap<>();
-        track.put(fileName, blob);
-        /* Staged for addition */
-        String trackHash = sha1(serialize((Serializable) track));
-        File addition = join(STAGED_FOR_ADDITION, trackHash);
-        writeObject(addition, (Serializable) track);
     }
 }

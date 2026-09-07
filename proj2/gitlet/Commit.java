@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.Date; // TODO: You'll likely use this in this class
 import java.util.HashMap;
-import java.util.Map;
 
 /** Represents a gitlet commit object.
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -30,7 +29,7 @@ public class Commit implements Serializable {
     /** The parent Commit. */
     private Commit parentCommit;
     /** The tracts of blobs */
-    private Map<String, Object> tracts;
+    private HashMap<String, String> tracts;
 
     /* TODO: fill in the rest of this class. */
     public Commit(String m, String t, Commit p) {
@@ -40,11 +39,11 @@ public class Commit implements Serializable {
         tracts = new HashMap<>();
     }
 
-    public void track(String fileName, Object blob) {
-        tracts.put(fileName, blob);
+    public void storeTrack(String fileName, String blobHash) {
+        tracts.put(fileName, blobHash);
     }
 
-    public Object returnTrack(String fileName) {
+    public String returnBlob(String fileName) {
         return tracts.get(fileName);
     }
 }
