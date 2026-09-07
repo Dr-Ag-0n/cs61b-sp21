@@ -15,7 +15,7 @@ import static gitlet.Utils.*;
  *
  *  @author DrAgOn
  */
-public class Repository {
+public class Repository implements Serializable {
     /**
      * TODO: add instance variables here.
      *
@@ -36,15 +36,6 @@ public class Repository {
     public static final File STAGED_FOR_REMOVAL = join(STAGING_DIR, "Staged_for_removal");
     /** The directory to store blobs */
     public static final File BLOBS_DIR = join(GITLET_DIR, "Blobs");
-    /** Count of blobs */
-    private static int blobsCnt = 0;
-    /** Count of addition tracks */
-    private static int addCnt = 0;
-    /** Head pointer and Master branch */
-    public static Commit HEAD;
-    public static Commit Master; // TODO: still not used
-    /** current commit count */
-    public static int commitCnt = 0;
 
     /* TODO: fill in the rest of this class. */
     public static void initialize() {
@@ -63,10 +54,12 @@ public class Repository {
 
         /* Create initial commit */
         Commit initCommit = new Commit("initial commit", "00:00:00 UTC, Thursday, 1 January 1970", null);
-        HEAD = initCommit;
-        Master = initCommit;
-        File commit0 = join(COMMITS_DIR, "Commit0");
-        writeObject(commit0, initCommit);
+        String commitHash = sha1(serialize(initCommit));
+        File commit = join(COMMITS_DIR, commitHash);
+        writeObject(commit, initCommit);
+        /* Save HEAD information */
+        File head = join(GITLET_DIR, "HEAD");
+        writeContents(head, commitHash);
     }
 
     public static void add(String fileName) {
@@ -76,13 +69,17 @@ public class Repository {
             System.exit(0);
         }
         /* Write file into blob */
-        File blob = join(BLOBS_DIR, "blob" + blobsCnt);
+        byte[] blobContents = readContents(addFile);
+        String blobHash = sha1(blobContents);
+        File blob = join(BLOBS_DIR, blobHash);
         writeObject(blob, addFile);
         /* Read the current commit */
-        File cur = join(COMMITS_DIR, "Commit" + commitCnt);
-        readCommit(cur);
+        File head = join(GITLET_DIR, "HEAD");
+        String curCommitHash = readContentsAsString(head);
+        File cur = join(COMMITS_DIR, curCommitHash);
+        Commit curCommit = readObject(cur, Commit.class);
         /* Compare file's hash code with current commit's file */
-        Object curBlob = HEAD.returnTrack(fileName);
+        Object curBlob = curCommit.returnTrack(fileName);
         if (curBlob != null) {
             if (sha1(blob).equals(sha1(curBlob))) {
                 return;
@@ -91,13 +88,8 @@ public class Repository {
         Map<String, Object> track = new HashMap<>();
         track.put(fileName, blob);
         /* Staged for addition */
-        File addition = join(STAGED_FOR_ADDITION, "addition" + addCnt);
+        String trackHash = sha1(serialize((Serializable) track));
+        File addition = join(STAGED_FOR_ADDITION, trackHash);
         writeObject(addition, (Serializable) track);
-    }
-
-    public static Commit readCommit(File com) {
-        Commit commit = readObject(com, Commit.class);
-        HEAD = commit;
-        return commit;
     }
 }

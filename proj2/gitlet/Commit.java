@@ -45,12 +45,6 @@ public class Commit implements Serializable {
     }
 
     public Object returnTrack(String fileName) {
-        Object returnItem;
-        if (tracts != null) {
-            returnItem = tracts.get(fileName);
-        } else {
-            returnItem = null;
-        }
-        return returnItem;
+        return tracts.get(fileName);
     }
 }
