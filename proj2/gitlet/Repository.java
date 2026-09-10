@@ -68,22 +68,13 @@ public class Repository implements Serializable {
             System.out.println("File does not exist.");
             System.exit(0);
         }
+        File addition = join(STAGED_FOR_ADDITION, sha1(fileName));
         /* Write file into blob */
         byte[] blobContents = readContents(addFile);
         String blobHash = sha1(blobContents);
         File blob = join(BLOBS_DIR, blobHash);
-        writeObject(blob, sha1(addFile));
+        writeObject(blob, blobContents);
         /* Staged for addition */
-        File addition = join(STAGED_FOR_ADDITION, fileName);
-        /*
-         * If the addition track already exists,
-         * delete the previous saved blob.
-         */
-        if (addition.exists()) {
-            String removalBlobHash = readContentsAsString(addition);
-            File removalBlob = join(BLOBS_DIR, removalBlobHash);
-            restrictedDelete(removalBlob);
-        }
         writeContents(addition, blobHash);
         /*
          * Compare file's hash code with current commit's file,
