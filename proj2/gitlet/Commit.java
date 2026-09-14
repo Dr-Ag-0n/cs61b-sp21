@@ -2,9 +2,7 @@ package gitlet;
 
 // TODO: any imports you need here
 
-import java.io.File;
 import java.io.Serializable;
-import java.util.Date; // TODO: You'll likely use this in this class
 import java.util.HashMap;
 
 /** Represents a gitlet commit object.
@@ -27,23 +25,34 @@ public class Commit implements Serializable {
     /** The time of this Commit. */
     private String timeStamp;
     /** The parent Commit. */
-    private Commit parentCommit;
+    private String parentCommit;
     /** The tracts of blobs */
     private HashMap<String, String> tracts;
 
     /* TODO: fill in the rest of this class. */
-    public Commit(String m, String t, Commit p) {
+    public Commit(String m, String t) {
         message = m;
         timeStamp = t;
-        parentCommit = p;
+        parentCommit = null;
         tracts = new HashMap<>();
+    }
+
+    public Commit(Commit c) {
+        message = c.message;
+        timeStamp = c.timeStamp;
+        parentCommit = null;
+        tracts = new HashMap<>(c.tracts);
     }
 
     public void storeTrack(String fileName, String blobHash) {
         tracts.put(fileName, blobHash);
     }
 
-    public String returnBlob(String fileName) {
+    public String returnBlobHash(String fileName) {
         return tracts.get(fileName);
+    }
+
+    public void setParentCommit(String commitHash) {
+        parentCommit = commitHash;
     }
 }

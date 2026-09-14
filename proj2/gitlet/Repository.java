@@ -2,6 +2,8 @@ package gitlet;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.List;
 
 import static gitlet.Utils.*;
 
@@ -51,7 +53,7 @@ public class Repository implements Serializable {
         }
 
         /* Create initial commit */
-        Commit initCommit = new Commit("initial commit", "00:00:00 UTC, Thursday, 1 January 1970", null);
+        Commit initCommit = new Commit("initial commit", "00:00:00 UTC, Thursday, 1 January 1970");
         String commitHash = sha1(serialize(initCommit));
         File commit = join(COMMITS_DIR, commitHash);
         writeObject(commit, initCommit);
@@ -68,7 +70,7 @@ public class Repository implements Serializable {
             System.out.println("File does not exist.");
             System.exit(0);
         }
-        File addition = join(STAGED_FOR_ADDITION, sha1(fileName));
+        File addition = join(STAGED_FOR_ADDITION, fileName);
         /* Write file into blob */
         byte[] blobContents = readContents(addFile);
         String blobHash = sha1(blobContents);
@@ -84,11 +86,36 @@ public class Repository implements Serializable {
         String curCommitHash = readContentsAsString(head);
         File cur = join(COMMITS_DIR, curCommitHash);
         Commit curCommit = readObject(cur, Commit.class);
-        String curBlob = curCommit.returnBlob(sha1(fileName));
+        String curBlob = curCommit.returnBlobHash(fileName);
         if (curBlob != null) {
             if (curBlob.equals(blobHash)) {
-
+                addition.delete();
             }
         }
+    }
+
+    public static void makeCommit(String message) {
+        /* Read head commit */
+        File head = join(GITLET_DIR, "HEAD");
+        String curCommitHash = readContentsAsString(head);
+        File cur = join(COMMITS_DIR, curCommitHash);
+        Commit curCommit = readObject(cur, Commit.class);
+        /* Copy head commit */
+        Commit newCommit = new Commit(curCommit);
+        /* Add new track */
+        List<String> fileNames = plainFilenamesIn(STAGED_FOR_ADDITION);
+        if (fileNames != null) {
+            for (String name: fileNames) {
+                File newAddition = join(STAGED_FOR_ADDITION, name);
+                String blobName = readContentsAsString(newAddition);
+                newCommit.storeTrack(name, blobName);
+            }
+        }
+        /* Set parent commit */
+        newCommit.setParentCommit(curCommitHash);
+        /* Store the commit */
+        String commitHash = sha1(serialize(newCommit));
+        File commit = join(COMMITS_DIR, commitHash);
+        writeObject(commit, newCommit);
     }
 }

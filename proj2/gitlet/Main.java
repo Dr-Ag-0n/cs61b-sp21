@@ -25,7 +25,16 @@ public class Main {
                 }
                 Repository.add(args[1]);
                 break;
-            // TODO: FILL THE REST IN
+            case "commit":
+                if (args.length == 1) {
+                    System.out.println("Please enter a commit message.");
+                    System.exit(0);
+                } else if (args.length != 2) {
+                    System.out.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                Repository.makeCommit(args[1]);
+                break;
         }
     }
 }
