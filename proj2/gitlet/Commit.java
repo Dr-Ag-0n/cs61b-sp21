@@ -55,4 +55,12 @@ public class Commit implements Serializable {
     public void setParentCommit(String commitHash) {
         parentCommit = commitHash;
     }
+
+    public String returnTrack(String fileName) {
+        return tracts.get(fileName);
+    }
+
+    public void rmTrack(String fileName) {
+        tracts.remove(fileName);
+    }
 }

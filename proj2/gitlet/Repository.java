@@ -2,7 +2,6 @@ package gitlet;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.List;
 
 import static gitlet.Utils.*;
@@ -61,7 +60,7 @@ public class Repository implements Serializable {
         File head = join(GITLET_DIR, "HEAD");
         writeContents(head, commitHash);
         File master = join(GITLET_DIR, "MASTER");
-        writeObject(master, commitHash);
+        writeContents(master, commitHash);
     }
 
     public static void add(String fileName) {
@@ -75,7 +74,7 @@ public class Repository implements Serializable {
         byte[] blobContents = readContents(addFile);
         String blobHash = sha1(blobContents);
         File blob = join(BLOBS_DIR, blobHash);
-        writeObject(blob, blobContents);
+        writeContents(blob, blobContents);
         /* Staged for addition */
         writeContents(addition, blobHash);
         /*
@@ -103,12 +102,19 @@ public class Repository implements Serializable {
         /* Copy head commit */
         Commit newCommit = new Commit(curCommit);
         /* Add new track */
-        List<String> fileNames = plainFilenamesIn(STAGED_FOR_ADDITION);
-        if (fileNames != null) {
-            for (String name: fileNames) {
+        List<String> additionFiles = plainFilenamesIn(STAGED_FOR_ADDITION);
+        if (additionFiles != null) {
+            for (String name: additionFiles) {
                 File newAddition = join(STAGED_FOR_ADDITION, name);
                 String blobName = readContentsAsString(newAddition);
                 newCommit.storeTrack(name, blobName);
+            }
+        }
+        /* Remove the track in the staged area for removal */
+        List<String> removalFiles = plainFilenamesIn(STAGED_FOR_REMOVAL);
+        if (removalFiles != null) {
+            for (String name: removalFiles) {
+                newCommit.rmTrack(name);
             }
         }
         /* Set parent commit */
@@ -119,8 +125,40 @@ public class Repository implements Serializable {
         writeObject(commit, newCommit);
         /* Move HEAD and MASTER point */
         File newHead = join(GITLET_DIR, "HEAD");
-        writeObject(newHead, commitHash);
+        writeContents(newHead, commitHash);
         File newMaster = join(GITLET_DIR, "MASTER");
-        writeObject(newMaster, commitHash);
+        writeContents(newMaster, commitHash);
+    }
+
+    public static void rm(String fileName) {
+        /* If the file is in the staging area for addition,
+        *  just remove the track form staging_for_removal.
+        */
+        File StAddFile = join(STAGED_FOR_ADDITION, fileName);
+        if (StAddFile.exists()) {
+            StAddFile.delete();
+        }
+        /* If the file is tracked in the current commit tracks,
+        *  stage it for removal and remove the file from the working directory if the user has not already done so.
+        */
+        File head = join(GITLET_DIR, "HEAD");
+        String curCommitHash = readContentsAsString(head);
+        File cur = join(COMMITS_DIR, curCommitHash);
+        Commit curCommit = readObject(cur, Commit.class);
+        String fileBlobHash = curCommit.returnTrack(fileName);
+        if (fileBlobHash != null) {
+            File removal = join(STAGED_FOR_REMOVAL, fileName);
+            writeContents(removal, fileBlobHash);
+        } else {
+            return;
+        }
+        File file = join(CWD, fileName);
+        if (file.exists()) {
+            file.delete();
+            return;
+        }
+        /* Failure case */
+        System.out.println("Selected model is at capacity. Please try a different model.");
+        System.exit(0);
     }
 }

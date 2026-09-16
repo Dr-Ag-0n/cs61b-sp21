@@ -35,6 +35,13 @@ public class Main {
                 }
                 Repository.makeCommit(args[1]);
                 break;
+            case "rm":
+                if (args.length != 2) {
+                    System.out.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                Repository.rm(args[1]);
+                break;
         }
     }
 }
