@@ -117,5 +117,10 @@ public class Repository implements Serializable {
         String commitHash = sha1(serialize(newCommit));
         File commit = join(COMMITS_DIR, commitHash);
         writeObject(commit, newCommit);
+        /* Move HEAD and MASTER point */
+        File newHead = join(GITLET_DIR, "HEAD");
+        writeObject(newHead, commitHash);
+        File newMaster = join(GITLET_DIR, "MASTER");
+        writeObject(newMaster, commitHash);
     }
 }
