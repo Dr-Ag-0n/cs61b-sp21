@@ -5,6 +5,7 @@ package gitlet;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 
 /** Represents a gitlet commit object.
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -63,7 +64,12 @@ public class Commit implements Serializable {
 
     public void setCurTime() {
         Date curTime = new Date(System.currentTimeMillis());
-        timeStamp = curTime.toString();
+        String curTimeStamp = String.format(
+                Locale.US,
+                "%ta %tb %te %tT %tY %tz",
+                curTime, curTime, curTime, curTime, curTime, curTime
+        );
+        timeStamp = curTimeStamp;
     }
 
     public String returnTrack(String fileName) {
@@ -72,5 +78,17 @@ public class Commit implements Serializable {
 
     public void rmTrack(String fileName) {
         tracts.remove(fileName);
+    }
+
+    public String returnParent() {
+        return parentCommit;
+    }
+
+    public String returnTime() {
+        return timeStamp;
+    }
+
+    public String returnMes() {
+        return message;
     }
 }

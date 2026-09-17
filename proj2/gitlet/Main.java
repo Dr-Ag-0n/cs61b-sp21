@@ -42,6 +42,8 @@ public class Main {
                 }
                 Repository.rm(args[1]);
                 break;
+            case "log":
+                Repository.log();
         }
     }
 }

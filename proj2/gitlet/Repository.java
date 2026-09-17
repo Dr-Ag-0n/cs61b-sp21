@@ -108,6 +108,7 @@ public class Repository implements Serializable {
                 File newAddition = join(STAGED_FOR_ADDITION, name);
                 String blobName = readContentsAsString(newAddition);
                 newCommit.storeTrack(name, blobName);
+                newAddition.delete();
             }
         }
         /* Remove the track in the staged area for removal */
@@ -115,6 +116,8 @@ public class Repository implements Serializable {
         if (removalFiles != null) {
             for (String name: removalFiles) {
                 newCommit.rmTrack(name);
+                File newRemoval = join(STAGED_FOR_REMOVAL, name);
+                newRemoval.delete();
             }
         }
         /* Set parent commit */
@@ -136,15 +139,15 @@ public class Repository implements Serializable {
 
     public static void rm(String fileName) {
         /* If the file is in the staging area for addition,
-        *  just remove the track form staging_for_removal.
-        */
+         *  just remove the track form staging_for_removal.
+         */
         File StAddFile = join(STAGED_FOR_ADDITION, fileName);
         if (StAddFile.exists()) {
             StAddFile.delete();
         }
         /* If the file is tracked in the current commit tracks,
-        *  stage it for removal and remove the file from the working directory if the user has not already done so.
-        */
+         *  stage it for removal and remove the file from the working directory if the user has not already done so.
+         */
         File head = join(GITLET_DIR, "HEAD");
         String curCommitHash = readContentsAsString(head);
         File cur = join(COMMITS_DIR, curCommitHash);
@@ -155,11 +158,39 @@ public class Repository implements Serializable {
             File file = join(CWD, fileName);
             if (file.exists()) {
                 file.delete();
+                writeContents(removal, fileBlobHash);
                 return;
-            }    writeContents(removal, fileBlobHash);
+            }
         }
         /* Failure case */
         System.out.println("No reason to remove the file.");
         System.exit(0);
+    }
+
+    public static void log() {
+        /* Get HEAD commit */
+        File head = join(GITLET_DIR, "HEAD");
+        String curCommitHash = readContentsAsString(head);
+        File cur = join(COMMITS_DIR, curCommitHash);
+        Commit curCommit = readObject(cur, Commit.class);
+        /* Print first commit */
+        System.out.println("===");
+        String commitHash = readContentsAsString(head);
+        System.out.println("commit " + commitHash);
+        System.out.println("Date: " + curCommit.returnTime());
+        System.out.println(curCommit.returnMes());
+        System.out.println();
+        /* Print remaining commit */
+        String preCommitHash = curCommit.returnParent();
+        while (preCommitHash != null) {
+            File pre = join(COMMITS_DIR, preCommitHash);
+            Commit preCommit = readObject(pre, Commit.class);
+            System.out.println("===");
+            System.out.println("commit " + preCommitHash);
+            System.out.println("Date: " + preCommit.returnTime());
+            System.out.println(preCommit.returnMes());
+            System.out.println();
+            preCommitHash = preCommit.returnParent();
+        }
     }
 }
