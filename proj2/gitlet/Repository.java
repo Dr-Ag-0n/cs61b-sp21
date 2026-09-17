@@ -148,17 +148,14 @@ public class Repository implements Serializable {
         String fileBlobHash = curCommit.returnTrack(fileName);
         if (fileBlobHash != null) {
             File removal = join(STAGED_FOR_REMOVAL, fileName);
-            writeContents(removal, fileBlobHash);
-        } else {
-            return;
-        }
-        File file = join(CWD, fileName);
-        if (file.exists()) {
-            file.delete();
-            return;
+            File file = join(CWD, fileName);
+            if (file.exists()) {
+                file.delete();
+                return;
+            }    writeContents(removal, fileBlobHash);
         }
         /* Failure case */
-        System.out.println("Selected model is at capacity. Please try a different model.");
+        System.out.println("No reason to remove the file.");
         System.exit(0);
     }
 }
