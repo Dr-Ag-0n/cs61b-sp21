@@ -119,6 +119,10 @@ public class Repository implements Serializable {
         }
         /* Set parent commit */
         newCommit.setParentCommit(curCommitHash);
+        /* Change the commit message */
+        newCommit.setMessage(message);
+        /* Set time */
+        newCommit.setCurTime();
         /* Store the commit */
         String commitHash = sha1(serialize(newCommit));
         File commit = join(COMMITS_DIR, commitHash);

@@ -3,6 +3,7 @@ package gitlet;
 // TODO: any imports you need here
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
 
 /** Represents a gitlet commit object.
@@ -54,6 +55,15 @@ public class Commit implements Serializable {
 
     public void setParentCommit(String commitHash) {
         parentCommit = commitHash;
+    }
+
+    public void setMessage(String m) {
+        message = m;
+    }
+
+    public void setCurTime() {
+        Date curTime = new Date(System.currentTimeMillis());
+        timeStamp = curTime.toString();
     }
 
     public String returnTrack(String fileName) {
