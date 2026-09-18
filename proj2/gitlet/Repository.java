@@ -35,6 +35,8 @@ public class Repository implements Serializable {
     public static final File STAGED_FOR_REMOVAL = join(STAGING_DIR, "Staged_for_removal");
     /** The directory to store blobs */
     public static final File BLOBS_DIR = join(GITLET_DIR, "Blobs");
+    /** The directory to store branches */
+    public static final File BRANCHES_DIR = join(GITLET_DIR, "Branches");
 
     /* TODO: fill in the rest of this class. */
     public static void initialize() {
@@ -46,6 +48,7 @@ public class Repository implements Serializable {
             STAGED_FOR_ADDITION.mkdir();
             STAGED_FOR_REMOVAL.mkdir();
             BLOBS_DIR.mkdir();
+            BRANCHES_DIR.mkdir();
         } else {
             System.out.println("A Gitlet version-control system already exists in the current directory.");
             System.exit(0);
@@ -59,7 +62,7 @@ public class Repository implements Serializable {
         /* Save HEAD and MASTER information */
         File head = join(GITLET_DIR, "HEAD");
         writeContents(head, commitHash);
-        File master = join(GITLET_DIR, "MASTER");
+        File master = join(BRANCHES_DIR, "MASTER");
         writeContents(master, commitHash);
     }
 
@@ -133,7 +136,7 @@ public class Repository implements Serializable {
         /* Move HEAD and MASTER point */
         File newHead = join(GITLET_DIR, "HEAD");
         writeContents(newHead, commitHash);
-        File newMaster = join(GITLET_DIR, "MASTER");
+        File newMaster = join(BRANCHES_DIR, "MASTER");
         writeContents(newMaster, commitHash);
     }
 
@@ -192,5 +195,37 @@ public class Repository implements Serializable {
             System.out.println();
             preCommitHash = preCommit.returnParent();
         }
+    }
+
+    public static void status() {
+        System.out.println("=== Branches ===");
+        List<String> branches = plainFilenamesIn(BRANCHES_DIR);
+        if (branches != null) {
+            for (String branch: branches) {
+                System.out.println(branch);
+            }
+        }
+        System.out.println();
+        System.out.println("=== Staged Files ===");
+        List<String> additions = plainFilenamesIn(STAGED_FOR_ADDITION);
+        if (additions != null) {
+            for (String addition: additions) {
+                System.out.println(addition);
+            }
+        }
+        System.out.println();
+        System.out.println("=== Removed Files ===");
+        List<String> removals = plainFilenamesIn(STAGED_FOR_REMOVAL);
+        if (removals != null) {
+            for (String removal: removals) {
+                System.out.println(removal);
+            }
+        }
+        System.out.println();
+        /* TODO: extra points */
+        System.out.println("=== Modifications Not Staged For Commit ===");
+        System.out.println();
+        System.out.println("=== Untracked Files ===");
+        System.out.println();
     }
 }

@@ -43,7 +43,19 @@ public class Main {
                 Repository.rm(args[1]);
                 break;
             case "log":
+                if (args.length != 1) {
+                    System.out.println("Incorrect operands.");
+                    System.exit(0);
+                }
                 Repository.log();
+                break;
+            case "status":
+                if (args.length != 1) {
+                    System.out.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                Repository.status();
+                break;
         }
     }
 }
