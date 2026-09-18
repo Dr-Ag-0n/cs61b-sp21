@@ -56,6 +56,10 @@ public class Main {
                 }
                 Repository.status();
                 break;
+            case "checkout":
+                if (args.length == 3) {
+                    Repository.checkoutFile(args[2]);
+                }
         }
     }
 }

@@ -228,4 +228,22 @@ public class Repository implements Serializable {
         System.out.println("=== Untracked Files ===");
         System.out.println();
     }
+
+    public static void checkoutFile(String fileName) {
+        /* Get HEAD commit */
+        File head = join(GITLET_DIR, "HEAD");
+        String curCommitHash = readContentsAsString(head);
+        File cur = join(COMMITS_DIR, curCommitHash);
+        Commit curCommit = readObject(cur, Commit.class);
+        String blobHash = curCommit.returnTrack(fileName);
+        if (blobHash == null) {
+            System.out.println("File does not exist in that commit.");
+            System.exit(0);
+        }
+        /* Resume the file from current commit */
+        File file = join(CWD, fileName);
+        File fileBlob = join(BLOBS_DIR, blobHash);
+        byte[] content = readContents(fileBlob);
+        writeContents(file, content);
+    }
 }
