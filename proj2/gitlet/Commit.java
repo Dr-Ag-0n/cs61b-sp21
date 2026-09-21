@@ -31,10 +31,15 @@ public class Commit implements Serializable {
     /** The tracts of blobs */
     private HashMap<String, String> tracts;
 
-    /* TODO: fill in the rest of this class. */
-    public Commit(String m, String t) {
+    public Commit(String m) {
         message = m;
-        timeStamp = t;
+        Date initialTime = new Date(0);
+        String curTimeStamp = String.format(
+                Locale.US,
+                "%ta %tb %te %tT %tY %tz",
+                initialTime, initialTime, initialTime, initialTime, initialTime, initialTime
+        );
+        timeStamp = curTimeStamp;
         parentCommit = null;
         tracts = new HashMap<>();
     }

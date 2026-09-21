@@ -55,7 +55,7 @@ public class Repository implements Serializable {
         }
 
         /* Create initial commit */
-        Commit initCommit = new Commit("initial commit", "00:00:00 UTC, Thursday, 1 January 1970");
+        Commit initCommit = new Commit("initial commit");
         String commitHash = sha1(serialize(initCommit));
         File commit = join(COMMITS_DIR, commitHash);
         writeObject(commit, initCommit);
