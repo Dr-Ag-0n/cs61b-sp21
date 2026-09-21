@@ -248,11 +248,12 @@ public class Repository implements Serializable {
     }
 
     public static void checkoutCommitFile(String commitHash, String fileName) {
-        File commit = join(COMMITS_DIR, commitHash);
-        if (!commit.exists()) {
+        String wholeCommitHash = returnCommitHash(commitHash);
+        if (wholeCommitHash == null) {
             System.out.println("No commit with that id exists.");
             System.exit(0);
         }
+        File commit = join(COMMITS_DIR, wholeCommitHash);
         Commit com = readObject(commit, Commit.class);
         String blobHash = com.returnTrack(fileName);
         if (blobHash == null) {
@@ -263,5 +264,15 @@ public class Repository implements Serializable {
         File fileBlob = join(BLOBS_DIR, blobHash);
         byte[] content = readContents(fileBlob);
         writeContents(file, content);
+    }
+
+    private static String returnCommitHash(String commitHash) {
+        List<String> commitList = plainFilenamesIn(COMMITS_DIR);
+        for (String s: commitList) {
+            if (s.startsWith(commitHash)) {
+                return s;
+            }
+        }
+        return null;
     }
 }
