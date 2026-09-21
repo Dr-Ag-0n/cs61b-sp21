@@ -50,10 +50,6 @@ public class Commit implements Serializable {
         tracts.put(fileName, blobHash);
     }
 
-    public String returnBlobHash(String fileName) {
-        return tracts.get(fileName);
-    }
-
     public void setParentCommit(String commitHash) {
         parentCommit = commitHash;
     }

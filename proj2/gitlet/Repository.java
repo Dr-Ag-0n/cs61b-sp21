@@ -88,7 +88,7 @@ public class Repository implements Serializable {
         String curCommitHash = readContentsAsString(head);
         File cur = join(COMMITS_DIR, curCommitHash);
         Commit curCommit = readObject(cur, Commit.class);
-        String curBlob = curCommit.returnBlobHash(fileName);
+        String curBlob = curCommit.returnTrack(fileName);
         if (curBlob != null) {
             if (curBlob.equals(blobHash)) {
                 addition.delete();
@@ -241,6 +241,24 @@ public class Repository implements Serializable {
             System.exit(0);
         }
         /* Resume the file from current commit */
+        File file = join(CWD, fileName);
+        File fileBlob = join(BLOBS_DIR, blobHash);
+        byte[] content = readContents(fileBlob);
+        writeContents(file, content);
+    }
+
+    public static void checkoutCommitFile(String commitHash, String fileName) {
+        File commit = join(COMMITS_DIR, commitHash);
+        if (!commit.exists()) {
+            System.out.println("No commit with that id exists.");
+            System.exit(0);
+        }
+        Commit com = readObject(commit, Commit.class);
+        String blobHash = com.returnTrack(fileName);
+        if (blobHash == null) {
+            System.out.println("File does not exist in that commit.");
+            System.exit(0);
+        }
         File file = join(CWD, fileName);
         File fileBlob = join(BLOBS_DIR, blobHash);
         byte[] content = readContents(fileBlob);

@@ -60,6 +60,9 @@ public class Main {
                 if (args.length == 3) {
                     Repository.checkoutFile(args[2]);
                 }
+                if (args.length == 4) {
+                    Repository.checkoutCommitFile(args[1], args[3]);
+                }
         }
     }
 }
