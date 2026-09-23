@@ -63,6 +63,14 @@ public class Main {
                 if (args.length == 4) {
                     Repository.checkoutCommitFile(args[1], args[3]);
                 }
+                break;
+            case "branch":
+                if (args.length != 2) {
+                    System.out.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                Repository.makeBranch(args[1]);
+                break;
         }
     }
 }

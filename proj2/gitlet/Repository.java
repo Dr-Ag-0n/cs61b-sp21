@@ -6,17 +6,14 @@ import java.util.List;
 
 import static gitlet.Utils.*;
 
-// TODO: any imports you need here
 
 /** Represents a gitlet repository.
- *  TODO: It's a good idea to give a description here of what else this Class
  *  does at a high level.
  *
  *  @author DrAgOn
  */
 public class Repository implements Serializable {
     /**
-     * TODO: add instance variables here.
      *
      * List all instance variables of the Repository class here with a useful
      * comment above them describing what that variable represents and how that
@@ -38,7 +35,6 @@ public class Repository implements Serializable {
     /** The directory to store branches */
     public static final File BRANCHES_DIR = join(GITLET_DIR, "Branches");
 
-    /* TODO: fill in the rest of this class. */
     public static void initialize() {
         /* Create .gitlet directory and subdirectory init */
         if (!GITLET_DIR.exists()) {
@@ -274,5 +270,16 @@ public class Repository implements Serializable {
             }
         }
         return null;
+    }
+
+    public static void makeBranch(String branchName) {
+        File branch = join(BRANCHES_DIR, branchName);
+        if (branch.exists()) {
+            System.out.println("A branch with that name already exists.");
+            System.exit(0);
+        }
+        File head = join(GITLET_DIR, "HEAD");
+        String currentCommit = readContentsAsString(head);
+        writeContents(branch, currentCommit);
     }
 }
