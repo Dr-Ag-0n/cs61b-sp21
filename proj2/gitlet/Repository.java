@@ -57,7 +57,7 @@ public class Repository implements Serializable {
         writeObject(commit, initCommit);
         /* Save HEAD and MASTER information */
         File head = join(GITLET_DIR, "HEAD");
-        writeContents(head, commitHash);
+        writeContents(head, "MASTER");
         File master = join(BRANCHES_DIR, "MASTER");
         writeContents(master, commitHash);
     }
@@ -80,10 +80,7 @@ public class Repository implements Serializable {
          * Compare file's hash code with current commit's file,
          * remove the addition if current blob is the same as the current commit's.
          */
-        File head = join(GITLET_DIR, "HEAD");
-        String curCommitHash = readContentsAsString(head);
-        File cur = join(COMMITS_DIR, curCommitHash);
-        Commit curCommit = readObject(cur, Commit.class);
+        Commit curCommit = returnHeadCommit();
         String curBlob = curCommit.returnTrack(fileName);
         if (curBlob != null) {
             if (curBlob.equals(blobHash)) {
@@ -92,12 +89,24 @@ public class Repository implements Serializable {
         }
     }
 
+    /** Return the branch's name that the HEAD pointer points */
+    private static String returnHeadName() {
+        File head = join(GITLET_DIR, "HEAD");
+        return readContentsAsString(head);
+    }
+
+    /** Return the branch's latest commit that the HEAD pointer points */
+    private static Commit returnHeadCommit() {
+        String curBranch = returnHeadName();
+        File branch = join(BRANCHES_DIR, curBranch);
+        String curCommitHash = readContentsAsString(branch);
+        File curCommit = join(COMMITS_DIR, curCommitHash);
+        return readObject(curCommit, Commit.class);
+    }
+
     public static void makeCommit(String message) {
         /* Read head commit */
-        File head = join(GITLET_DIR, "HEAD");
-        String curCommitHash = readContentsAsString(head);
-        File cur = join(COMMITS_DIR, curCommitHash);
-        Commit curCommit = readObject(cur, Commit.class);
+        Commit curCommit = returnHeadCommit();
         /* Copy head commit */
         Commit newCommit = new Commit(curCommit);
         /* Add new track */
@@ -120,7 +129,9 @@ public class Repository implements Serializable {
             }
         }
         /* Set parent commit */
-        newCommit.setParentCommit(curCommitHash);
+        String curBranchName = returnHeadName();
+        File curBranch = join(BRANCHES_DIR, curBranchName);
+        newCommit.setParentCommit(readContentsAsString(curBranch));
         /* Change the commit message */
         newCommit.setMessage(message);
         /* Set time */
@@ -129,11 +140,9 @@ public class Repository implements Serializable {
         String commitHash = sha1(serialize(newCommit));
         File commit = join(COMMITS_DIR, commitHash);
         writeObject(commit, newCommit);
-        /* Move HEAD and MASTER point */
-        File newHead = join(GITLET_DIR, "HEAD");
-        writeContents(newHead, commitHash);
-        File newMaster = join(BRANCHES_DIR, "MASTER");
-        writeContents(newMaster, commitHash);
+        /* Move current branch point */
+        File newBranch = join(BRANCHES_DIR, returnHeadName());
+        writeContents(newBranch, commitHash);
     }
 
     public static void rm(String fileName) {
@@ -147,10 +156,7 @@ public class Repository implements Serializable {
         /* If the file is tracked in the current commit tracks,
          *  stage it for removal and remove the file from the working directory if the user has not already done so.
          */
-        File head = join(GITLET_DIR, "HEAD");
-        String curCommitHash = readContentsAsString(head);
-        File cur = join(COMMITS_DIR, curCommitHash);
-        Commit curCommit = readObject(cur, Commit.class);
+        Commit curCommit = returnHeadCommit();
         String fileBlobHash = curCommit.returnTrack(fileName);
         if (fileBlobHash != null) {
             File removal = join(STAGED_FOR_REMOVAL, fileName);
@@ -168,14 +174,12 @@ public class Repository implements Serializable {
 
     public static void log() {
         /* Get HEAD commit */
-        File head = join(GITLET_DIR, "HEAD");
-        String curCommitHash = readContentsAsString(head);
-        File cur = join(COMMITS_DIR, curCommitHash);
-        Commit curCommit = readObject(cur, Commit.class);
+        Commit curCommit = returnHeadCommit();
         /* Print first commit */
         System.out.println("===");
-        String commitHash = readContentsAsString(head);
-        System.out.println("commit " + commitHash);
+        String curBranchName = returnHeadName();
+        File curBranch = join(BRANCHES_DIR, curBranchName);
+        System.out.println("commit " + readContentsAsString(curBranch));
         System.out.println("Date: " + curCommit.returnTime());
         System.out.println(curCommit.returnMes());
         System.out.println();
@@ -227,10 +231,7 @@ public class Repository implements Serializable {
 
     public static void checkoutFile(String fileName) {
         /* Get HEAD commit */
-        File head = join(GITLET_DIR, "HEAD");
-        String curCommitHash = readContentsAsString(head);
-        File cur = join(COMMITS_DIR, curCommitHash);
-        Commit curCommit = readObject(cur, Commit.class);
+        Commit curCommit = returnHeadCommit();
         String blobHash = curCommit.returnTrack(fileName);
         if (blobHash == null) {
             System.out.println("File does not exist in that commit.");
@@ -262,6 +263,7 @@ public class Repository implements Serializable {
         writeContents(file, content);
     }
 
+    /** Return the whole commit's hash with complete or shorten commitHash, null if not exists */
     private static String returnCommitHash(String commitHash) {
         List<String> commitList = plainFilenamesIn(COMMITS_DIR);
         for (String s: commitList) {
