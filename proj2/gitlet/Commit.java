@@ -2,9 +2,7 @@ package gitlet;
 
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
+import java.util.*;
 
 /** Represents a gitlet commit object.
  *  does at a high level.
@@ -70,8 +68,14 @@ public class Commit implements Serializable {
         timeStamp = curTimeStamp;
     }
 
+    /* Return the blob's hash value */
     public String returnTrack(String fileName) {
         return tracts.get(fileName);
+    }
+
+    /** Return all tracked files' name */
+    public Set<String> returnTracks() {
+        return tracts.keySet();
     }
 
     public void rmTrack(String fileName) {

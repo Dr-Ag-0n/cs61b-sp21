@@ -59,9 +59,13 @@ public class Main {
             case "checkout":
                 if (args.length == 3) {
                     Repository.checkoutFile(args[2]);
-                }
-                if (args.length == 4) {
+                } else if (args.length == 4) {
                     Repository.checkoutCommitFile(args[1], args[3]);
+                } else if (args.length == 2) {
+                    Repository.checkoutBranch(args[1]);
+                } else {
+                    System.out.println("Incorrect operands.");
+                    System.exit(0);
                 }
                 break;
             case "branch":

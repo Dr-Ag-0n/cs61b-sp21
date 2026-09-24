@@ -2,7 +2,10 @@ package gitlet;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static gitlet.Utils.*;
 
@@ -263,6 +266,48 @@ public class Repository implements Serializable {
         writeContents(file, content);
     }
 
+    public static void checkoutBranch(String branchName) {
+        File branch = join(BRANCHES_DIR, branchName);
+        if (!branch.exists()) {
+            System.out.println("No such branch exists.");
+            System.exit(0);
+        }
+        if (returnHeadName().equals(branchName)) {
+            System.out.println("No need to checkout the current branch.");
+            System.exit(0);
+        }
+        List<String> curFileNames = plainFilenamesIn(CWD);
+        String curCommitHash = returnBranchCommitHash(returnHeadName());
+        Set<String> curTracks = returnTrackFiles(curCommitHash);
+        String desCommitHash = returnBranchCommitHash(branchName);
+        Set<String> desTracks = returnTrackFiles(desCommitHash);
+        List<String> stagedFiles = plainFilenamesIn(STAGED_FOR_ADDITION);
+        List<String> removalFiles = plainFilenamesIn(STAGED_FOR_REMOVAL);
+        for (String name: curFileNames) {
+            if (!stagedFiles.contains(name)) {
+                if (!curTracks.contains(name) || removalFiles.contains(name)) {
+                    if (desTracks.contains(name)) {
+                        System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                        System.exit(0);
+                    }
+                }
+            }
+        }
+    }
+
+    /** Return the commit's hash that given branch points */
+    private static String returnBranchCommitHash(String branchName) {
+        File branch = join(BRANCHES_DIR, branchName);
+        return readContentsAsString(branch);
+    }
+
+    /** Return files' name that given commit tracks */
+    private static Set<String> returnTrackFiles(String commitHash) {
+        File com = join(COMMITS_DIR, commitHash);
+        Commit commit = readObject(com, Commit.class);
+        return commit.returnTracks();
+    }
+
     /** Return the whole commit's hash with complete or shorten commitHash, null if not exists */
     private static String returnCommitHash(String commitHash) {
         List<String> commitList = plainFilenamesIn(COMMITS_DIR);
@@ -281,7 +326,7 @@ public class Repository implements Serializable {
             System.exit(0);
         }
         File head = join(GITLET_DIR, "HEAD");
-        String currentCommit = readContentsAsString(head);
+        String currentCommit = returnBranchCommitHash(readContentsAsString(head));
         writeContents(branch, currentCommit);
     }
 }
