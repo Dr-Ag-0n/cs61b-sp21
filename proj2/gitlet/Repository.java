@@ -318,8 +318,8 @@ public class Repository implements Serializable {
         /* Clean the staging area */
         if (removalFiles != null) {
             for (String name: additionFiles) {
-                File newaddition = join(STAGED_FOR_REMOVAL, name);
-                newaddition.delete();
+                File newAddition = join(STAGED_FOR_ADDITION, name);
+                newAddition.delete();
             }
         }
         if (removalFiles != null) {
