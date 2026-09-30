@@ -363,4 +363,25 @@ public class Repository implements Serializable {
         String currentCommit = returnBranchCommitHash(readContentsAsString(head));
         writeContents(branch, currentCommit);
     }
+
+    private static void printCommit(String commitHash) {
+        File c = join(COMMITS_DIR, commitHash);
+        Commit commit = readObject(c, Commit.class);
+        System.out.println("===");
+        System.out.println("commit " + commitHash);
+        System.out.println("Date: " + commit.returnTime());
+        System.out.println(commit.returnMes());
+        System.out.println();
+    }
+
+    public static void globLog() {
+        List<String> commitsHash = plainFilenamesIn(COMMITS_DIR);
+        if (commitsHash != null) {
+            for (String commitHash: commitsHash) {
+                printCommit(commitHash);
+            }
+        }
+    }
+
+    public static void find(String s){}
 }

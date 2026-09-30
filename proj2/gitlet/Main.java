@@ -75,6 +75,20 @@ public class Main {
                 }
                 Repository.makeBranch(args[1]);
                 break;
+            case "glob-log":
+                if (args.length != 1) {
+                    System.out.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                Repository.globLog();
+                break;
+            case "find":
+                if (args.length != 2) {
+                    System.out.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                Repository.find(args[1]);
+                break;
         }
     }
 }
