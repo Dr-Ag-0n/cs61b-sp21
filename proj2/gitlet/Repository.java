@@ -383,5 +383,23 @@ public class Repository implements Serializable {
         }
     }
 
-    public static void find(String s){}
+    public static void find(String s){
+        boolean find = false;
+        List<String> commitsHash = plainFilenamesIn(COMMITS_DIR);
+        if (commitsHash != null) {
+            for (String commitHash: commitsHash) {
+                File c = join(COMMITS_DIR, commitHash);
+                Commit commit = readObject(c, Commit.class);
+                String message = commit.returnMes();
+                if (message.contains(s)) {
+                    find = true;
+                    System.out.println(commitHash);
+                }
+            }
+        }
+        if (!find) {
+            System.out.println("Found no commit with that message.");
+            System.exit(0);
+        }
+    }
 }
