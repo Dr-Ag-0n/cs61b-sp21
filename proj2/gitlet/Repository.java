@@ -2,8 +2,6 @@ package gitlet;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -267,6 +265,7 @@ public class Repository implements Serializable {
     }
 
     public static void checkoutBranch(String branchName) {
+        /* Failure cases */
         File branch = join(BRANCHES_DIR, branchName);
         if (!branch.exists()) {
             System.out.println("No such branch exists.");
@@ -281,10 +280,10 @@ public class Repository implements Serializable {
         Set<String> curTracks = returnTrackFiles(curCommitHash);
         String desCommitHash = returnBranchCommitHash(branchName);
         Set<String> desTracks = returnTrackFiles(desCommitHash);
-        List<String> stagedFiles = plainFilenamesIn(STAGED_FOR_ADDITION);
+        List<String> additionFiles = plainFilenamesIn(STAGED_FOR_ADDITION);
         List<String> removalFiles = plainFilenamesIn(STAGED_FOR_REMOVAL);
         for (String name: curFileNames) {
-            if (!stagedFiles.contains(name)) {
+            if (!additionFiles.contains(name)) {
                 if (!curTracks.contains(name) || removalFiles.contains(name)) {
                     if (desTracks.contains(name)) {
                         System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
@@ -293,6 +292,41 @@ public class Repository implements Serializable {
                 }
             }
         }
+        /* Clean current tracked files */
+        if (curTracks != null) {
+            for (String name: curTracks) {
+                File curFile = join(CWD, name);
+                curFile.delete();
+            }
+        }
+        /* Retrieve all files */
+        String branchCommitHash = returnBranchCommitHash(branchName);
+        File branchCommit = join(COMMITS_DIR, branchCommitHash);
+        Commit commit = readObject(branchCommit, Commit.class);
+        Set<String> fileNames = commit.returnTracks();
+        for (String fileName: fileNames) {
+            File file = join(CWD, fileName);
+            String fileBlob = commit.returnTrack(fileName);
+            File blob = join(BLOBS_DIR, fileBlob);
+            byte[] contents = readContents(blob);
+            writeContents(file, contents);
+        }
+        /* Clean the staging area */
+        if (removalFiles != null) {
+            for (String name: additionFiles) {
+                File newaddition = join(STAGED_FOR_REMOVAL, name);
+                newaddition.delete();
+            }
+        }
+        if (removalFiles != null) {
+            for (String name: removalFiles) {
+                File newRemoval = join(STAGED_FOR_REMOVAL, name);
+                newRemoval.delete();
+            }
+        }
+        /* Change the HEAD pointer */
+        File head = join(GITLET_DIR, "HEAD");
+        writeContents(head, branchName);
     }
 
     /** Return the commit's hash that given branch points */
