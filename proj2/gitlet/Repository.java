@@ -406,4 +406,18 @@ public class Repository implements Serializable {
             System.exit(0);
         }
     }
+
+    public static void rmBranch(String branchName) {
+        File branch = join(BRANCHES_DIR, branchName);
+        if (!branch.exists()) {
+            System.out.println("A branch with that name does not exist.");
+            System.exit(0);
+        }
+        String cur = returnHeadName();
+        if (cur.equals(branchName)) {
+            System.out.println("Cannot remove the current branch.");
+            System.exit(0);
+        }
+        branch.delete();
+    }
 }
