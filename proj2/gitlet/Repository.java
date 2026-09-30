@@ -201,8 +201,12 @@ public class Repository implements Serializable {
     public static void status() {
         System.out.println("=== Branches ===");
         List<String> branches = plainFilenamesIn(BRANCHES_DIR);
+        String cur = returnHeadName();
         if (branches != null) {
             for (String branch: branches) {
+                if (branch.equals(cur)) {
+                    System.out.print("*");
+                }
                 System.out.println(branch);
             }
         }
