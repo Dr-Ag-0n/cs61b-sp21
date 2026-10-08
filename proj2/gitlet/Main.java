@@ -96,6 +96,12 @@ public class Main {
                 }
                 Repository.rmBranch(args[1]);
                 break;
+            case "reset":
+                if (args.length != 2) {
+                    System.out.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                Repository.reset(args[1]);
         }
     }
 }

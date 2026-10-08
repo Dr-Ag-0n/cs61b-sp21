@@ -420,4 +420,60 @@ public class Repository implements Serializable {
         }
         branch.delete();
     }
+
+    public static void reset(String commitHash) {
+        String headName = returnHeadName();
+        File head = join(BRANCHES_DIR, headName);
+        File commit = join(COMMITS_DIR, commitHash);
+        if (!commit.exists()) {
+            System.out.println("No commit with that id exists.");
+            System.exit(0);
+        }
+        List<String> curFileNames = plainFilenamesIn(CWD);
+        String curCommitHash = returnBranchCommitHash(returnHeadName());
+        Set<String> curTracks = returnTrackFiles(curCommitHash);
+        Set<String> desTracks = returnTrackFiles(commitHash);
+        List<String> additionFiles = plainFilenamesIn(STAGED_FOR_ADDITION);
+        List<String> removalFiles = plainFilenamesIn(STAGED_FOR_REMOVAL);
+        for (String name: curFileNames) {
+            if (!additionFiles.contains(name)) {
+                if (!curTracks.contains(name) || removalFiles.contains(name)) {
+                    if (desTracks.contains(name)) {
+                        System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                        System.exit(0);
+                    }
+                }
+            }
+        }
+        /* Clean current tracked files */
+        if (curTracks != null) {
+            for (String name: curTracks) {
+                File curFile = join(CWD, name);
+                curFile.delete();
+            }
+        }
+        /* Retrieve all files */
+        Commit desCommit = readObject(commit, Commit.class);
+        Set<String> fileNames = desCommit.returnTracks();
+        for (String fileName: fileNames) {
+            File file = join(CWD, fileName);
+            String fileBlob = desCommit.returnTrack(fileName);
+            File blob = join(BLOBS_DIR, fileBlob);
+            byte[] contents = readContents(blob);
+            writeContents(file, contents);
+        }
+        /* Clean the staging area */
+        if (removalFiles != null) {
+            for (String name: additionFiles) {
+                File newAddition = join(STAGED_FOR_ADDITION, name);
+                newAddition.delete();
+            }
+        }
+        if (removalFiles != null) {
+            for (String name: removalFiles) {
+                File newRemoval = join(STAGED_FOR_REMOVAL, name);
+                newRemoval.delete();
+            }
+        }
+    }
 }
