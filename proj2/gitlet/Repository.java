@@ -47,7 +47,8 @@ public class Repository implements Serializable {
             BLOBS_DIR.mkdir();
             BRANCHES_DIR.mkdir();
         } else {
-            System.out.println("A Gitlet version-control system already exists in the current directory.");
+            System.out.println("A Gitlet version-control system already exists"
+                    + " in the current directory.");
             System.exit(0);
         }
 
@@ -150,12 +151,13 @@ public class Repository implements Serializable {
         /* If the file is in the staging area for addition,
          *  just remove the track form staging_for_removal.
          */
-        File StAddFile = join(STAGED_FOR_ADDITION, fileName);
-        if (StAddFile.exists()) {
-            StAddFile.delete();
+        File stAddFile = join(STAGED_FOR_ADDITION, fileName);
+        if (stAddFile.exists()) {
+            stAddFile.delete();
         }
         /* If the file is tracked in the current commit tracks,
-         *  stage it for removal and remove the file from the working directory if the user has not already done so.
+         * stage it for removal and remove the file from the working directory
+         * if the user has not already done so.
          */
         Commit curCommit = returnHeadCommit();
         String fileBlobHash = curCommit.returnTrack(fileName);
@@ -227,7 +229,6 @@ public class Repository implements Serializable {
             }
         }
         System.out.println();
-        /* TODO: extra points */
         System.out.println("=== Modifications Not Staged For Commit ===");
         System.out.println();
         System.out.println("=== Untracked Files ===");
@@ -290,7 +291,8 @@ public class Repository implements Serializable {
             if (!additionFiles.contains(name)) {
                 if (!curTracks.contains(name) || removalFiles.contains(name)) {
                     if (desTracks.contains(name)) {
-                        System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                        System.out.println("There is an untracked file in the way; "
+                                + "delete it, or add and commit it first.");
                         System.exit(0);
                     }
                 }
@@ -387,7 +389,7 @@ public class Repository implements Serializable {
         }
     }
 
-    public static void find(String s){
+    public static void find(String s) {
         boolean find = false;
         List<String> commitsHash = plainFilenamesIn(COMMITS_DIR);
         if (commitsHash != null) {
@@ -439,7 +441,8 @@ public class Repository implements Serializable {
             if (!additionFiles.contains(name)) {
                 if (!curTracks.contains(name) || removalFiles.contains(name)) {
                     if (desTracks.contains(name)) {
-                        System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                        System.out.println("There is an untracked file in the way; "
+                                + "delete it, or add and commit it first.");
                         System.exit(0);
                     }
                 }
