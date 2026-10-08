@@ -59,8 +59,8 @@ public class Repository implements Serializable {
         writeObject(commit, initCommit);
         /* Save HEAD and MASTER information */
         File head = join(GITLET_DIR, "HEAD");
-        writeContents(head, "MASTER");
-        File master = join(BRANCHES_DIR, "MASTER");
+        writeContents(head, "master");
+        File master = join(BRANCHES_DIR, "master");
         writeContents(master, commitHash);
     }
 
