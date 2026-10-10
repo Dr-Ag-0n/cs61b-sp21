@@ -2,6 +2,7 @@ package gitlet;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -479,4 +480,47 @@ public class Repository implements Serializable {
             }
         }
     }
+
+    public static void merge(String branchName) {}
+
+    /** Find the split point's commit hash
+     *  between HEAD and given branch's name.
+     */
+    private static String findSplitCommit(String givenBranch) {
+        Commit head = returnHeadCommit();
+        File branchName = join(BRANCHES_DIR, givenBranch);
+        String branchCommitHash = readContentsAsString(branchName);
+        File branchCommit = join(COMMITS_DIR, branchCommitHash);
+        Commit branch = readObject(branchCommit, Commit.class);
+        /* Set contains all commits' id of current branch */
+        HashSet<String> curCommitLine = new HashSet<>();
+        curCommitLine.add(returnBranchCommitHash(returnHeadName()));
+        Commit p = head;
+        while (p.returnParent() != null) {
+            curCommitLine.add(p.returnParent());
+            p = returnParentCommit(p);
+        }
+        /* Traverse the given branch */
+        String out = null;
+        if (curCommitLine.contains(branchCommitHash)) {
+            out = branchCommitHash;
+            return out;
+        }
+        Commit m = branch;
+        while (m.returnParent() != null) {
+            if (curCommitLine.contains(m.returnParent())) {
+                out = m.returnParent();
+                break;
+            }
+        }
+        return out;
+    }
+
+    private static Commit returnParentCommit(Commit c) {
+        String parentCommitHash = c.returnParent();
+        File parentCommit = join(COMMITS_DIR, parentCommitHash);
+        Commit parent = readObject(parentCommit, Commit.class);
+        return parent;
+    }
 }
+
