@@ -481,7 +481,21 @@ public class Repository implements Serializable {
         }
     }
 
-    public static void merge(String branchName) {}
+    public static void merge(String branchName) {
+        /* Two special cases */
+        String splitCommitHash = findSplitCommit(branchName);
+        String headCommitHash = returnBranchCommitHash(returnHeadName());
+        String branchCommitHash = returnBranchCommitHash(branchName);
+        if (splitCommitHash.equals(branchCommitHash)) {
+            System.out.println("Given branch is an ancestor of the current branch.");
+            System.exit(0);
+        }
+        if (splitCommitHash.equals(headCommitHash)) {
+            checkoutBranch(branchName);
+            System.out.println("Current branch fast-forwarded.");
+            System.exit(0);
+        }
+    }
 
     /** Find the split point's commit hash
      *  between HEAD and given branch's name.
