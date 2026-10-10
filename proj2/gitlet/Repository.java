@@ -270,6 +270,26 @@ public class Repository implements Serializable {
         writeContents(file, content);
     }
 
+    /* Check if it exists an untracked file in the current commit
+     * would be overwritten or deleted.
+     */
+    private static void hasUntrackedConflict(Set<String> affectedFiles) {
+        List<String> curFileNames = plainFilenamesIn(CWD);
+        String curCommitHash = returnBranchCommitHash(returnHeadName());
+        Set<String> curTracks = returnTrackFiles(curCommitHash);
+        List<String> additionFiles = plainFilenamesIn(STAGED_FOR_ADDITION);
+        List<String> removalFiles = plainFilenamesIn(STAGED_FOR_REMOVAL);
+        for (String f: curFileNames) {
+            if (affectedFiles.contains(f)) {
+                if ((!additionFiles.contains(f) && !curTracks.contains(f)) || removalFiles.contains(f)) {
+                    System.out.println("There is an untracked file in the way; "
+                            + "delete it, or add and commit it first.");
+                    System.exit(0);
+                }
+            }
+        }
+    }
+
     public static void checkoutBranch(String branchName) {
         /* Failure cases */
         File branch = join(BRANCHES_DIR, branchName);
