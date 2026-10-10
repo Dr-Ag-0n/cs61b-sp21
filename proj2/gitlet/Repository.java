@@ -482,6 +482,23 @@ public class Repository implements Serializable {
     }
 
     public static void merge(String branchName) {
+        /* Failure case */
+        List<String> additionFiles = plainFilenamesIn(STAGED_FOR_ADDITION);
+        List<String> removalFiles = plainFilenamesIn(STAGED_FOR_REMOVAL);
+        if (!additionFiles.isEmpty() || !removalFiles.isEmpty()) {
+            System.out.println("You have uncommitted changes.");
+            System.exit(0);
+        }
+        File branch = join(BRANCHES_DIR, branchName);
+        if (!branch.exists()) {
+            System.out.println("A branch with that name does not exist.");
+            System.exit(0);
+        }
+        String curBranchName = returnHeadName();
+        if (curBranchName.equals(branchName)) {
+            System.out.println("Cannot merge a branch with itself.");
+            System.exit(0);
+        }
         /* Two special cases */
         String splitCommitHash = findSplitCommit(branchName);
         String headCommitHash = returnBranchCommitHash(returnHeadName());
