@@ -301,25 +301,11 @@ public class Repository implements Serializable {
             System.out.println("No need to checkout the current branch.");
             System.exit(0);
         }
-        List<String> curFileNames = plainFilenamesIn(CWD);
-        String curCommitHash = returnBranchCommitHash(returnHeadName());
-        Set<String> curTracks = returnTrackFiles(curCommitHash);
         String desCommitHash = returnBranchCommitHash(branchName);
         Set<String> desTracks = returnTrackFiles(desCommitHash);
-        List<String> additionFiles = plainFilenamesIn(STAGED_FOR_ADDITION);
-        List<String> removalFiles = plainFilenamesIn(STAGED_FOR_REMOVAL);
-        for (String name: curFileNames) {
-            if (!additionFiles.contains(name)) {
-                if (!curTracks.contains(name) || removalFiles.contains(name)) {
-                    if (desTracks.contains(name)) {
-                        System.out.println("There is an untracked file in the way; "
-                                + "delete it, or add and commit it first.");
-                        System.exit(0);
-                    }
-                }
-            }
-        }
+        hasUntrackedConflict(desTracks);
         /* Clean current tracked files */
+        Set<String> curTracks = returnTrackFiles(returnBranchCommitHash(returnHeadName()));
         if (curTracks != null) {
             for (String name: curTracks) {
                 File curFile = join(CWD, name);
@@ -339,7 +325,9 @@ public class Repository implements Serializable {
             writeContents(file, contents);
         }
         /* Clean the staging area */
-        if (removalFiles != null) {
+        List<String> additionFiles = plainFilenamesIn(STAGED_FOR_ADDITION);
+        List<String> removalFiles = plainFilenamesIn(STAGED_FOR_REMOVAL);
+        if (additionFiles != null) {
             for (String name: additionFiles) {
                 File newAddition = join(STAGED_FOR_ADDITION, name);
                 newAddition.delete();
@@ -452,24 +440,10 @@ public class Repository implements Serializable {
             System.out.println("No commit with that id exists.");
             System.exit(0);
         }
-        List<String> curFileNames = plainFilenamesIn(CWD);
-        String curCommitHash = returnBranchCommitHash(returnHeadName());
-        Set<String> curTracks = returnTrackFiles(curCommitHash);
         Set<String> desTracks = returnTrackFiles(commitHash);
-        List<String> additionFiles = plainFilenamesIn(STAGED_FOR_ADDITION);
-        List<String> removalFiles = plainFilenamesIn(STAGED_FOR_REMOVAL);
-        for (String name: curFileNames) {
-            if (!additionFiles.contains(name)) {
-                if (!curTracks.contains(name) || removalFiles.contains(name)) {
-                    if (desTracks.contains(name)) {
-                        System.out.println("There is an untracked file in the way; "
-                                + "delete it, or add and commit it first.");
-                        System.exit(0);
-                    }
-                }
-            }
-        }
+        hasUntrackedConflict(desTracks);
         /* Clean current tracked files */
+        Set<String> curTracks = returnTrackFiles(returnBranchCommitHash(returnHeadName()));
         if (curTracks != null) {
             for (String name: curTracks) {
                 File curFile = join(CWD, name);
@@ -487,7 +461,9 @@ public class Repository implements Serializable {
             writeContents(file, contents);
         }
         /* Clean the staging area */
-        if (removalFiles != null) {
+        List<String> additionFiles = plainFilenamesIn(STAGED_FOR_ADDITION);
+        List<String> removalFiles = plainFilenamesIn(STAGED_FOR_REMOVAL);
+        if (additionFiles != null) {
             for (String name: additionFiles) {
                 File newAddition = join(STAGED_FOR_ADDITION, name);
                 newAddition.delete();
