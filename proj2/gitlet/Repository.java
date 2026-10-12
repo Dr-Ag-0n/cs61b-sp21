@@ -501,10 +501,14 @@ public class Repository implements Serializable {
             System.out.println("Cannot merge a branch with itself.");
             System.exit(0);
         }
+        String branchCommitHash = returnBranchCommitHash(branchName);
+        File branchCommitFile = join(COMMITS_DIR, branchCommitHash);
+        Commit branchCommit = readObject(branchCommitFile, Commit.class);
+        Set<String> branchTracks = branchCommit.returnTracks();
+        hasUntrackedConflict(branchTracks);
         /* Two special cases */
         String splitCommitHash = findSplitCommit(branchName);
         String headCommitHash = returnBranchCommitHash(returnHeadName());
-        String branchCommitHash = returnBranchCommitHash(branchName);
         if (splitCommitHash.equals(branchCommitHash)) {
             System.out.println("Given branch is an ancestor of the current branch.");
             System.exit(0);
