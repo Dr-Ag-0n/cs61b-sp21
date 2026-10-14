@@ -505,8 +505,25 @@ public class Repository implements Serializable {
         String branchCommitHash = returnBranchCommitHash(branchName);
         File branchCommitFile = join(COMMITS_DIR, branchCommitHash);
         Commit branchCommit = readObject(branchCommitFile, Commit.class);
-        Set<String> branchTracks = branchCommit.returnTracks();
-        hasUntrackedConflict(branchTracks);
+        /* Untracked files checking */
+        Set<String> affectedFiles = new HashSet<>();
+        Set<String> totalFiles = new HashSet<>();
+        Set<String> branchFiles = branchCommit.returnTracks();
+        Commit head = returnHeadCommit();
+        Set<String> headFiles = head.returnTracks();
+        File splitCommit = join(COMMITS_DIR, findSplitCommit(branchName));
+        Commit split = readObject(splitCommit, Commit.class);
+        Set<String> splitFiles = split.returnTracks();
+        totalFiles.addAll(headFiles);
+        totalFiles.addAll(branchFiles);
+        totalFiles.addAll(splitFiles);
+        for (String fileName: totalFiles) {
+            MergeAction out = findMergeAction(split.returnTrack(fileName), head.returnTrack(fileName), branchCommit.returnTrack(fileName));
+            if (!out.equals(MergeAction.KEEP)) {
+                affectedFiles.add(fileName);
+            }
+        }
+        hasUntrackedConflict(affectedFiles);
         /* Two special cases */
         String splitCommitHash = findSplitCommit(branchName);
         String headCommitHash = returnBranchCommitHash(returnHeadName());
@@ -519,7 +536,6 @@ public class Repository implements Serializable {
             System.out.println("Current branch fast-forwarded.");
             System.exit(0);
         }
-
     }
 
     /* Figure out merge case */
