@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import static gitlet.Utils.*;
@@ -518,6 +519,45 @@ public class Repository implements Serializable {
             System.out.println("Current branch fast-forwarded.");
             System.exit(0);
         }
+
+    }
+
+    /* Figure out merge case */
+    private enum MergeAction {
+        KEEP,
+        TAKE,
+        REMOVE,
+        CONFLICT
+    }
+
+    private static MergeAction findMergeAction(String splitBlobHash,
+                                               String currentBlobHash,
+                                               String givenBlobHash) {
+        MergeAction out = null;
+        if (Objects.equals(currentBlobHash, givenBlobHash)) {
+            out = MergeAction.KEEP;
+        } else if (splitBlobHash != null) {
+            if (Objects.equals(splitBlobHash, givenBlobHash)) {
+                out = MergeAction.KEEP;
+            } else if (Objects.equals(splitBlobHash, currentBlobHash)) {
+                if (givenBlobHash == null) {
+                    out = MergeAction.REMOVE;
+                } else {
+                    out = MergeAction.TAKE;
+                }
+            } else {
+                out = MergeAction.CONFLICT;
+            }
+        } else if (splitBlobHash == null) {
+            if (givenBlobHash == null) {
+                out = MergeAction.KEEP;
+            } else if (currentBlobHash == null) {
+                out = MergeAction.TAKE;
+            } else {
+                out = MergeAction.CONFLICT;
+            }
+        }
+        return out;
     }
 
     /** Find the split point's commit hash
