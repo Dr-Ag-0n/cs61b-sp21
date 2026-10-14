@@ -538,6 +538,35 @@ public class Repository implements Serializable {
         }
     }
 
+    private static boolean execMerge(MergeAction mergeAction, String fileName,
+                                  String currentBlobHash,
+                                  String givenBlobHash) {
+        boolean hasConflict = false;
+        File cwdFile = join(CWD, fileName);
+        switch (mergeAction) {
+            case KEEP -> {}
+            case TAKE -> {
+                checkoutCommitFile(givenBlobHash, fileName);
+                add(fileName);
+            }
+            case REMOVE -> {
+                rm(fileName);
+            }
+            case CONFLICT -> {
+                File currentBlob = join(BLOBS_DIR, currentBlobHash);
+                File givenBlob = join(BLOBS_DIR, givenBlobHash);
+                byte[] curContents = readContents(currentBlob);
+                byte[] givenContents = readContents(givenBlob);
+                writeContents(cwdFile, "<<<<<<< HEAD\n",
+                        curContents, "\n", "=======", "\n",
+                        givenContents, "\n", ">>>>>>>", "\n");
+                add(fileName);
+                hasConflict = true;
+            }
+        }
+        return hasConflict;
+    }
+
     /* Figure out merge case */
     private enum MergeAction {
         KEEP,
