@@ -25,6 +25,8 @@ public class Commit implements Serializable {
     private String parentCommit;
     /** The tracts of blobs */
     private HashMap<String, String> tracts;
+    /** Merge commit */
+    private String secParentCommit = null;
 
     public Commit(String m) {
         message = m;
@@ -92,5 +94,13 @@ public class Commit implements Serializable {
 
     public String returnMes() {
         return message;
+    }
+
+    public void setSecParentCommit(String commitHash) {
+        secParentCommit = commitHash;
+    }
+
+    public String returnSceParent() {
+        return secParentCommit;
     }
 }

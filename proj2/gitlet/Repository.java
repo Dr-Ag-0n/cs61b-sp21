@@ -518,7 +518,8 @@ public class Repository implements Serializable {
         totalFiles.addAll(branchFiles);
         totalFiles.addAll(splitFiles);
         for (String fileName: totalFiles) {
-            MergeAction out = findMergeAction(split.returnTrack(fileName), head.returnTrack(fileName), branchCommit.returnTrack(fileName));
+            MergeAction out = findMergeAction(split.returnTrack(fileName), head.returnTrack(fileName),
+                    branchCommit.returnTrack(fileName));
             if (!out.equals(MergeAction.KEEP)) {
                 affectedFiles.add(fileName);
             }
@@ -535,6 +536,18 @@ public class Repository implements Serializable {
             checkoutBranch(branchName);
             System.out.println("Current branch fast-forwarded.");
             System.exit(0);
+        }
+        boolean hasConflict = false;
+        for (String fileName: totalFiles) {
+            MergeAction out = findMergeAction(split.returnTrack(fileName), head.returnTrack(fileName),
+                    branchCommit.returnTrack(fileName));
+            hasConflict = execMerge(out, fileName, head.returnTrack(fileName), branchCommit.returnTrack(fileName));
+        }
+        String message = "Merged " + branchName + "into " + curBranchName + ".";
+        makeCommit(message);
+        head.setSecParentCommit(returnBranchCommitHash(branchName));
+        if (hasConflict) {
+            System.out.println("Encountered a merge conflict.");
         }
     }
 
