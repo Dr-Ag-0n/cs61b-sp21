@@ -543,7 +543,7 @@ public class Repository implements Serializable {
                     branchCommit.returnTrack(fileName));
             hasConflict = execMerge(out, fileName, head.returnTrack(fileName), branchCommit.returnTrack(fileName));
         }
-        String message = "Merged " + branchName + "into " + curBranchName + ".";
+        String message = "Merged " + branchName + " into " + curBranchName + ".";
         makeCommit(message);
         head.setSecParentCommit(returnBranchCommitHash(branchName));
         if (hasConflict) {
@@ -559,7 +559,9 @@ public class Repository implements Serializable {
         switch (mergeAction) {
             case KEEP -> {}
             case TAKE -> {
-                checkoutCommitFile(givenBlobHash, fileName);
+                File givenBlob = join(BLOBS_DIR, givenBlobHash);
+                byte[] givenContents = readContents(givenBlob);
+                writeContents(cwdFile, givenContents);
                 add(fileName);
             }
             case REMOVE -> {
@@ -571,8 +573,8 @@ public class Repository implements Serializable {
                 byte[] curContents = readContents(currentBlob);
                 byte[] givenContents = readContents(givenBlob);
                 writeContents(cwdFile, "<<<<<<< HEAD\n",
-                        curContents, "\n", "=======", "\n",
-                        givenContents, "\n", ">>>>>>>", "\n");
+                        curContents, "=======", "\n",
+                        givenContents, ">>>>>>>");
                 add(fileName);
                 hasConflict = true;
             }
