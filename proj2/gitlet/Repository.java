@@ -156,12 +156,14 @@ public class Repository implements Serializable {
     }
 
     public static void rm(String fileName) {
+        boolean err = true;
         /* If the file is in the staging area for addition,
          *  just remove the track form staging_for_removal.
          */
         File stAddFile = join(STAGED_FOR_ADDITION, fileName);
         if (stAddFile.exists()) {
             stAddFile.delete();
+            err = false;
         }
         /* If the file is tracked in the current commit tracks,
          * stage it for removal and remove the file from the working directory
@@ -175,12 +177,14 @@ public class Repository implements Serializable {
             if (file.exists()) {
                 file.delete();
                 writeContents(removal, fileBlobHash);
-                return;
             }
+            err = false;
         }
         /* Failure case */
-        System.out.println("No reason to remove the file.");
-        System.exit(0);
+        if (err) {
+            System.out.println("No reason to remove the file.");
+            System.exit(0);
+        }
     }
 
     public static void log() {
