@@ -584,8 +584,8 @@ public class Repository implements Serializable {
                 byte[] curContents = readContents(currentBlob);
                 byte[] givenContents = readContents(givenBlob);
                 writeContents(cwdFile, "<<<<<<< HEAD\n",
-                        curContents, "=======", "\n",
-                        givenContents, ">>>>>>>");
+                        curContents, "=======\n",
+                        givenContents, ">>>>>>>\n");
                 add(fileName);
                 hasConflict = true;
             }
