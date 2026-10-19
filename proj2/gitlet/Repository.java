@@ -115,6 +115,13 @@ public class Repository implements Serializable {
     }
 
     public static void makeCommit(String message) {
+        /* Failure case */
+        List<String> addition = plainFilenamesIn(STAGED_FOR_ADDITION);
+        List<String> removal = plainFilenamesIn(STAGED_FOR_REMOVAL);
+        if (addition.isEmpty() && removal.isEmpty()) {
+            System.out.println("No changes added to the commit.");
+            System.exit(0);
+        }
         /* Read head commit */
         Commit curCommit = returnHeadCommit();
         /* Copy head commit */
@@ -176,8 +183,8 @@ public class Repository implements Serializable {
             File file = join(CWD, fileName);
             if (file.exists()) {
                 file.delete();
-                writeContents(removal, fileBlobHash);
             }
+            writeContents(removal, fileBlobHash);
             err = false;
         }
         /* Failure case */

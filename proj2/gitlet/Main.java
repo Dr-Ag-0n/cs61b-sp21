@@ -33,6 +33,10 @@ public class Main {
                     System.out.println("Incorrect operands.");
                     System.exit(0);
                 }
+                if (args[1].isEmpty()) {
+                    System.out.println("Please enter a commit message.");
+                    System.exit(0);
+                }
                 Repository.makeCommit(args[1]);
                 break;
             case "rm":
@@ -75,7 +79,7 @@ public class Main {
                 }
                 Repository.makeBranch(args[1]);
                 break;
-            case "glob-log":
+            case "global-log":
                 if (args.length != 1) {
                     System.out.println("Incorrect operands.");
                     System.exit(0);
