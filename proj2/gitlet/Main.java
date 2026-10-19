@@ -1,5 +1,7 @@
 package gitlet;
 
+import java.util.Objects;
+
 /** Driver class for Gitlet, a subset of the Git version-control system.
  *  @author DrAgOn
  */
@@ -62,8 +64,16 @@ public class Main {
                 break;
             case "checkout":
                 if (args.length == 3) {
+                    if (!Objects.equals(args[1], "--")) {
+                        System.out.println("Incorrect operands.");
+                        System.exit(0);
+                    }
                     Repository.checkoutFile(args[2]);
                 } else if (args.length == 4) {
+                    if (!Objects.equals(args[2], "--")) {
+                        System.out.println("Incorrect operands.");
+                        System.exit(0);
+                    }
                     Repository.checkoutCommitFile(args[1], args[3]);
                 } else if (args.length == 2) {
                     Repository.checkoutBranch(args[1]);
