@@ -579,10 +579,20 @@ public class Repository implements Serializable {
                 rm(fileName);
             }
             case CONFLICT -> {
-                File currentBlob = join(BLOBS_DIR, currentBlobHash);
-                File givenBlob = join(BLOBS_DIR, givenBlobHash);
-                byte[] curContents = readContents(currentBlob);
-                byte[] givenContents = readContents(givenBlob);
+                byte[] curContents;
+                byte[] givenContents;
+                if (currentBlobHash == null) {
+                    curContents = new byte[0];
+                } else {
+                    File currentBlob = join(BLOBS_DIR, currentBlobHash);
+                    curContents = readContents(currentBlob);
+                }
+                if (givenBlobHash == null) {
+                    givenContents = new byte[0];
+                } else {
+                    File givenBlob = join(BLOBS_DIR, givenBlobHash);
+                    givenContents = readContents(givenBlob);
+                }
                 writeContents(cwdFile, "<<<<<<< HEAD\n",
                         curContents, "=======\n",
                         givenContents, ">>>>>>>\n");
