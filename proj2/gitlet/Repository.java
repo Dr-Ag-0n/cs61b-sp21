@@ -111,7 +111,7 @@ public class Repository implements Serializable {
         return readObject(curCommit, Commit.class);
     }
 
-    public static void makeCommit(String message) {
+    public static void makeCommit(String message, String secParent) {
         /* Failure case */
         List<String> addition = plainFilenamesIn(STAGED_FOR_ADDITION);
         List<String> removal = plainFilenamesIn(STAGED_FOR_REMOVAL);
@@ -150,6 +150,10 @@ public class Repository implements Serializable {
         newCommit.setMessage(message);
         /* Set time */
         newCommit.setCurTime();
+        /* Set second parent */
+        if (secParent != null) {
+            newCommit.setSecParentCommit(secParent);
+        }
         /* Store the commit */
         String commitHash = sha1(serialize(newCommit));
         File commit = join(COMMITS_DIR, commitHash);
@@ -552,8 +556,7 @@ public class Repository implements Serializable {
             hasConflict = execMerge(out, fileName, head.returnTrack(fileName), branchCommit.returnTrack(fileName));
         }
         String message = "Merged " + branchName + " into " + curBranchName + ".";
-        makeCommit(message);
-        head.setSecParentCommit(returnBranchCommitHash(branchName));
+        makeCommit(message, returnBranchCommitHash(branchName));
         if (hasConflict) {
             System.out.println("Encountered a merge conflict.");
         }

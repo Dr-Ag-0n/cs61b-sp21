@@ -39,7 +39,7 @@ public class Main {
                     System.out.println("Please enter a commit message.");
                     System.exit(0);
                 }
-                Repository.makeCommit(args[1]);
+                Repository.makeCommit(args[1], null);
                 break;
             case "rm":
                 if (args.length != 2) {
