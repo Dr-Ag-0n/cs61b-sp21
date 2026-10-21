@@ -642,34 +642,20 @@ public class Repository implements Serializable {
      *  between HEAD and given branch's name.
      */
     private static String findSplitCommit(String givenBranch) {
-        Commit head = returnHeadCommit();
-        File branchName = join(BRANCHES_DIR, givenBranch);
-        String branchCommitHash = readContentsAsString(branchName);
-        File branchCommit = join(COMMITS_DIR, branchCommitHash);
-        Commit branch = readObject(branchCommit, Commit.class);
-        /* Set contains all commits' id of current branch */
-        HashSet<String> curCommitLine = new HashSet<>();
-        curCommitLine.add(returnBranchCommitHash(returnHeadName()));
-        Commit p = head;
-        while (p.returnParent() != null) {
-            curCommitLine.add(p.returnParent());
-            p = returnParentCommit(p);
-        }
-        /* Traverse the given branch */
-        String out = null;
-        if (curCommitLine.contains(branchCommitHash)) {
-            out = branchCommitHash;
-            return out;
-        }
-        Commit m = branch;
-        while (m.returnParent() != null) {
-            if (curCommitLine.contains(m.returnParent())) {
-                out = m.returnParent();
-                break;
+        Set<String> allAncestors = returnAllParents(returnBranchCommitHash(returnHeadName()));
+        allAncestors.retainAll(returnAllParents(returnBranchCommitHash(givenBranch)));
+        Set<String> candidates = new HashSet<>(allAncestors);
+        for (String ancestor: allAncestors) {
+            File c = join(COMMITS_DIR, ancestor);
+            Commit commit = readObject(c, Commit.class);
+            if (commit.returnParent() != null) {
+                candidates.remove(commit.returnParent());
             }
-            m = returnParentCommit(m);
+            if (commit.returnSceParent() != null) {
+                candidates.remove(commit.returnSceParent());
+            }
         }
-        return out;
+        return candidates.iterator().next();
     }
 
     private static Set<String> returnAllParents(String startCommitId) {
