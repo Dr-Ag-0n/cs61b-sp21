@@ -63,6 +63,13 @@ public class Repository implements Serializable {
         writeContents(master, commitHash);
     }
 
+    public static void checkInit() {
+        if (!GITLET_DIR.exists()) {
+            System.out.println("Not in an initialized Gitlet directory.");
+            System.exit(0);
+        }
+    }
+
     public static void add(String fileName) {
         File addFile = join(CWD, fileName);
         if (!addFile.exists()) {

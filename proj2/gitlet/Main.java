@@ -16,6 +16,9 @@ public class Main {
             System.exit(0);
         }
         String firstArg = args[0];
+        if (!firstArg.equals("init")) {
+            Repository.checkInit();
+        }
         switch (firstArg) {
             case "init":
                 Repository.initialize();
