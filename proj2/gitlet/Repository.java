@@ -259,7 +259,36 @@ public class Repository implements Serializable {
         System.out.println("=== Modifications Not Staged For Commit ===");
         System.out.println();
         System.out.println("=== Untracked Files ===");
+        List<String> untrackedFiles = findUntrackedFiles();
+        for (String untrack: untrackedFiles) {
+            System.out.println(untrack);
+        }
         System.out.println();
+    }
+
+    private static List<String> findUntrackedFiles() {
+        List<String> out = new LinkedList<>();
+        List<String> curFileNames = plainFilenamesIn(CWD);
+        String curCommitHash = returnBranchCommitHash(returnHeadName());
+        Set<String> curTracks = returnTrackFiles(curCommitHash);
+        List<String> additionFiles = plainFilenamesIn(STAGED_FOR_ADDITION);
+        List<String> removalFiles = plainFilenamesIn(STAGED_FOR_REMOVAL);
+        for (String f: curFileNames) {
+            if ((!additionFiles.contains(f) && !curTracks.contains(f)) || removalFiles.contains(f)) {
+                out.add(f);
+            }
+        }
+        return out;
+    }
+
+    private static Map<String, String> findModifiedFiles() {
+        Map<String, String> out = new  HashMap<>();
+        List<String> curFileNames = plainFilenamesIn(CWD);
+        String curCommitHash = returnBranchCommitHash(returnHeadName());
+        Set<String> curTracks = returnTrackFiles(curCommitHash);
+        List<String> additionFiles = plainFilenamesIn(STAGED_FOR_ADDITION);
+        List<String> removalFiles = plainFilenamesIn(STAGED_FOR_REMOVAL);
+        return out;
     }
 
     public static void checkoutFile(String fileName) {
