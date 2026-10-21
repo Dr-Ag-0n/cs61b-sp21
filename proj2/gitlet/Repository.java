@@ -2,10 +2,7 @@ package gitlet;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import static gitlet.Utils.*;
 
@@ -670,6 +667,30 @@ public class Repository implements Serializable {
                 out = m.returnParent();
                 break;
             }
+            m = returnParentCommit(m);
+        }
+        return out;
+    }
+
+    private static Set<String> returnAllParents(String startCommitId) {
+        File c = join(COMMITS_DIR, startCommitId);
+        Commit commit = readObject(c, Commit.class);
+        Set<String> out = new HashSet<>();
+        Queue<Commit> q = new LinkedList<>();
+        out.add(startCommitId);
+        q.offer(commit);
+        while (!q.isEmpty()) {
+            Commit com = q.poll();
+            if (com.returnParent() != null) {
+                if (out.add(com.returnParent())) {
+                    q.offer(returnParentCommit(com));
+                }
+            }
+            if (com.returnSceParent() != null) {
+                if (out.add(com.returnSceParent())) {
+                    q.offer(returnSecParentCommit(com));
+                }
+            }
         }
         return out;
     }
@@ -679,6 +700,13 @@ public class Repository implements Serializable {
         File parentCommit = join(COMMITS_DIR, parentCommitHash);
         Commit parent = readObject(parentCommit, Commit.class);
         return parent;
+    }
+
+    private static Commit returnSecParentCommit(Commit c) {
+        String parentCommitHash = c.returnSceParent();
+        File parentCommit = join(COMMITS_DIR, parentCommitHash);
+        Commit secParent = readObject(parentCommit, Commit.class);
+        return secParent;
     }
 }
 
