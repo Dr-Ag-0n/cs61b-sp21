@@ -257,6 +257,11 @@ public class Repository implements Serializable {
         }
         System.out.println();
         System.out.println("=== Modifications Not Staged For Commit ===");
+        Map<String, String> modifiedFiles = findModifiedFiles();
+        for (String fileName: modifiedFiles.keySet()) {
+            String state = modifiedFiles.get(fileName);
+            System.out.println(fileName + " " + "(" + state + ")");
+        }
         System.out.println();
         System.out.println("=== Untracked Files ===");
         List<String> untrackedFiles = findUntrackedFiles();
@@ -288,6 +293,44 @@ public class Repository implements Serializable {
         Set<String> curTracks = returnTrackFiles(curCommitHash);
         List<String> additionFiles = plainFilenamesIn(STAGED_FOR_ADDITION);
         List<String> removalFiles = plainFilenamesIn(STAGED_FOR_REMOVAL);
+        if (curFileNames != null) {
+            for (String fileName : curFileNames) {
+                File file = join(CWD, fileName);
+                byte[] curBlobContents = readContents(file);
+                String curBlobHash = sha1(curBlobContents);
+                Commit commit = returnHeadCommit();
+                if (additionFiles.contains(fileName)) {
+                    File addition = join(STAGED_FOR_ADDITION, fileName);
+                    String additionBlob = readContentsAsString(addition);
+                    if (!curBlobHash.equals(additionBlob)) {
+                        out.put(fileName, "modified");
+                    }
+                } else if (curTracks.contains(fileName)) {
+                    String trackedBlobHash = commit.returnTrack(fileName);
+                    if (!curBlobHash.equals(trackedBlobHash)) {
+                        out.put(fileName, "modified");
+                    }
+                }
+            }
+        }
+            if (additionFiles != null) {
+                for (String fileName: additionFiles) {
+                    File file = join(CWD, fileName);
+                    if (!file.exists()) {
+                        out.put(fileName, "deleted");
+                    }
+                }
+            }
+            if (curTracks != null) {
+                for (String fileName: curTracks) {
+                    File file = join(CWD, fileName);
+                    if (!file.exists()) {
+                        if (!removalFiles.contains(fileName)) {
+                            out.put(fileName, "deleted");
+                        }
+                    }
+                }
+            }
         return out;
     }
 
