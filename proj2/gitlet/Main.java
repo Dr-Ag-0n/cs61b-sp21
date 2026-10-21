@@ -1,6 +1,7 @@
 package gitlet;
 
 import java.util.Objects;
+import java.util.ResourceBundle;
 
 /** Driver class for Gitlet, a subset of the Git version-control system.
  *  @author DrAgOn
@@ -126,6 +127,20 @@ public class Main {
                     System.exit(0);
                 }
                 Repository.merge(args[1]);
+                break;
+            case "add-remote":
+                if (args.length != 3) {
+                    System.out.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                Repository.addRemote(args[1], args[2]);
+                break;
+            case "rm-remote":
+                if (args.length != 2) {
+                    System.out.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                Repository.rmRemote(args[1]);
                 break;
             default:
                 System.out.println("No command with that name exists.");

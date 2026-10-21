@@ -34,6 +34,8 @@ public class Repository implements Serializable {
     public static final File BLOBS_DIR = join(GITLET_DIR, "Blobs");
     /** The directory to store branches */
     public static final File BRANCHES_DIR = join(GITLET_DIR, "Branches");
+    /** The directory to store remote branched */
+    public static final File REMOTE_DIR = join(GITLET_DIR, "Remote");
 
     public static void initialize() {
         /* Create .gitlet directory and subdirectory init */
@@ -45,6 +47,7 @@ public class Repository implements Serializable {
             STAGED_FOR_REMOVAL.mkdir();
             BLOBS_DIR.mkdir();
             BRANCHES_DIR.mkdir();
+            REMOTE_DIR.mkdir();
         } else {
             System.out.println("A Gitlet version-control system already exists"
                     + " in the current directory.");
@@ -776,6 +779,25 @@ public class Repository implements Serializable {
         File parentCommit = join(COMMITS_DIR, parentCommitHash);
         Commit secParent = readObject(parentCommit, Commit.class);
         return secParent;
+    }
+
+    /* Remote section */
+    public static void addRemote(String remoteName, String remoteAddress) {
+        File remote = join(REMOTE_DIR, remoteName);
+        if (remote.exists()) {
+            System.out.println("A remote with that name already exists.");
+            System.exit(0);
+        }
+        writeContents(remote, remoteAddress);
+    }
+
+    public static void rmRemote(String remoteName) {
+        File remote = join(REMOTE_DIR, remoteName);
+        if (!remote.exists()) {
+            System.out.println("A remote with that name does not exist.");
+            System.exit(0);
+        }
+        remote.delete();
     }
 }
 
