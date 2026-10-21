@@ -452,8 +452,6 @@ public class Repository implements Serializable {
     }
 
     public static void reset(String commitHash) {
-        String headName = returnHeadName();
-        File head = join(BRANCHES_DIR, headName);
         File commit = join(COMMITS_DIR, commitHash);
         if (!commit.exists()) {
             System.out.println("No commit with that id exists.");
@@ -494,6 +492,9 @@ public class Repository implements Serializable {
                 newRemoval.delete();
             }
         }
+        /* Move the branch's pointer */
+        File head = join(BRANCHES_DIR, returnHeadName());
+        writeContents(head, commitHash);
     }
 
     public static void merge(String branchName) {
