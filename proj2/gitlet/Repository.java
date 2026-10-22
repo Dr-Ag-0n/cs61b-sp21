@@ -759,8 +759,9 @@ public class Repository implements Serializable {
         return candidates.iterator().next();
     }
 
-    private static Set<String> returnAllParents(String startCommitId) {
-        File c = join(COMMITS_DIR, startCommitId);
+    private static Set<String> returnAllParents(String startCommitId, File gitletDir) {
+        File commitsDir = join(gitletDir, "Commits");
+        File c = join(commitsDir, startCommitId);
         Commit commit = readObject(c, Commit.class);
         Set<String> out = new HashSet<>();
         Queue<Commit> q = new LinkedList<>();
@@ -780,6 +781,10 @@ public class Repository implements Serializable {
             }
         }
         return out;
+    }
+
+    private static Set<String> returnAllParents(String startCommitId) {
+        return returnAllParents(startCommitId, GITLET_DIR);
     }
 
     private static Commit returnParentCommit(Commit c) {
@@ -860,6 +865,52 @@ public class Repository implements Serializable {
         /* Move remote branch pointers */
         File remoteBranch = join(remoteBranchesDir, remoteBranchName);
         writeContents(remoteBranch, headCommitHash);
+    }
+
+    public static void fetch(String remoteName, String remoteBranchName) {
+        /* Failure case */
+        File remoteFile = join(REMOTE_DIR, remoteName);
+        String address = readContentsAsString(remoteFile);
+        File remoteGitletDir = new File(address);
+        if (!remoteGitletDir.exists()) {
+            System.out.println("Remote directory not found.");
+            System.exit(0);
+        }
+        File remoteBranchesDir = join(address, "Branches");
+        File remoteCommitsDir = join(address, "Commits");
+        File remoteBlobsDir = join(address, "Blobs");
+        File remoteBranchFile = join(remoteBranchesDir, remoteBranchName);
+        if (!remoteBranchFile.exists()) {
+            System.out.println("That remote does not have that branch.");
+            System.exit(0);
+        }
+        /* Read remote's branch commit id */
+        String remoteBranchCommit = readContentsAsString(remoteBranchFile);
+        /* Copy missing commits */
+        Set<String> remoteAllParents = returnAllParents(remoteBranchCommit, remoteGitletDir);
+        Set<String> allBlobs = new  HashSet<>();
+        for (String commit: remoteAllParents) {
+            File remoteCommit = join(remoteCommitsDir, commit);
+            Commit remote = readObject(remoteCommit, Commit.class);
+            File localCommit = join(COMMITS_DIR, commit);
+            if (!localCommit.exists()) {
+                Set<String> trackedFiles = remote.returnTracks();
+                for (String file: trackedFiles) {
+                    String blobHash = remote.returnTrack(file);
+                    allBlobs.add(blobHash);
+                }
+                // TODO
+                writeContents(remoteCommit, readContents(localCommit));
+            }
+        }
+        /* Copy missing blobs */
+        for (String blobHash: allBlobs) {
+            File localBlob = join(BLOBS_DIR, blobHash);
+            File remoteBlob = join(remoteBlobsDir, blobHash);
+            if (!remoteBlob.exists()) {
+                writeContents(remoteBlob, readContents(localBlob));
+            }
+        }
     }
 }
 
