@@ -910,7 +910,7 @@ public class Repository implements Serializable {
         for (String blobHash: allBlobs) {
             File remoteBlob = join(remoteBlobsDir, blobHash);
             File localBlob = join(BLOBS_DIR, blobHash);
-            if (!remoteBlob.exists()) {
+            if (!localBlob.exists()) {
                 writeContents(localBlob, readContents(remoteBlob));
             }
         }
