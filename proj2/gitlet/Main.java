@@ -142,6 +142,13 @@ public class Main {
                 }
                 Repository.rmRemote(args[1]);
                 break;
+            case "push":
+                if (args.length != 3) {
+                    System.out.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                Repository.push(args[1], args[2]);
+                break;
             default:
                 System.out.println("No command with that name exists.");
                 System.exit(0);

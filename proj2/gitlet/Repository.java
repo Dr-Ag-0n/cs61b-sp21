@@ -107,18 +107,28 @@ public class Repository implements Serializable {
     }
 
     /** Return the branch's name that the HEAD pointer points */
-    private static String returnHeadName() {
-        File head = join(GITLET_DIR, "HEAD");
+    private static String returnHeadName(File gitletDir) {
+        File head = join(gitletDir, "HEAD");
         return readContentsAsString(head);
     }
 
+    private static  String returnHeadName() {
+        return returnHeadName(GITLET_DIR);
+    }
+
     /** Return the branch's latest commit that the HEAD pointer points */
-    private static Commit returnHeadCommit() {
+    private static Commit returnHeadCommit(File gitletDir) {
+        File branchesDir = join(gitletDir, "Branches");
+        File commitsDir = join(gitletDir, "Commits");
         String curBranch = returnHeadName();
-        File branch = join(BRANCHES_DIR, curBranch);
+        File branch = join(branchesDir, curBranch);
         String curCommitHash = readContentsAsString(branch);
-        File curCommit = join(COMMITS_DIR, curCommitHash);
+        File curCommit = join(commitsDir, curCommitHash);
         return readObject(curCommit, Commit.class);
+    }
+
+    private static Commit returnHeadCommit() {
+        return returnHeadCommit(GITLET_DIR);
     }
 
     public static void makeCommit(String message, String secParent) {
@@ -446,9 +456,14 @@ public class Repository implements Serializable {
     }
 
     /** Return the commit's hash that given branch points */
-    private static String returnBranchCommitHash(String branchName) {
-        File branch = join(BRANCHES_DIR, branchName);
+    private static String returnBranchCommitHash(String branchName, File gitletDir) {
+        File branchesDir = join(gitletDir, "Branches");
+        File branch = join(branchesDir, branchName);
         return readContentsAsString(branch);
+    }
+
+    private static String returnBranchCommitHash(String branchName) {
+        return returnBranchCommitHash(branchName, GITLET_DIR);
     }
 
     /** Return files' name that given commit tracks */
@@ -798,6 +813,53 @@ public class Repository implements Serializable {
             System.exit(0);
         }
         remote.delete();
+    }
+
+    public static void push(String remoteName, String remoteBranchName) {
+        /* Failure case */
+        File remote = join(REMOTE_DIR, remoteName);
+        String address = readContentsAsString(remote);
+        File remoteGitletDir = new File(address);
+        if (!remoteGitletDir.exists()) {
+            System.out.println("Remote directory not found.");
+            System.exit(0);
+        }
+        File remoteBranchesDir = join(address, "Branches");
+        File remoteCommitsDir = join(address, "Commits");
+        File remoteBlobsDir = join(address, "Blobs");
+        String remoteCommitHash = returnBranchCommitHash(remoteBranchName, remoteGitletDir);
+        String headCommitHash = returnBranchCommitHash(returnHeadName());
+        Set<String> allParents = returnAllParents(headCommitHash);
+        if (!allParents.contains(remoteCommitHash)) {
+            System.out.println("Please pull down remote changes before pushing.");
+            System.exit(0);
+        }
+        /* Copy missing commits */
+        Set<String> allBlobs = new  HashSet<>();
+        for (String commit: allParents) {
+            File localCommit = join(COMMITS_DIR, commit);
+            Commit local = readObject(localCommit, Commit.class);
+            File remoteCommit = join(remoteCommitsDir, commit);
+            if (!remoteCommit.exists()) {
+                Set<String> trackedFiles = local.returnTracks();
+                for (String file: trackedFiles) {
+                    String blobHash = local.returnTrack(file);
+                    allBlobs.add(blobHash);
+                }
+                writeContents(remoteCommit, readContents(localCommit));
+            }
+        }
+        /* Copy missing blobs */
+        for (String blobHash: allBlobs) {
+            File localBlob = join(BLOBS_DIR, blobHash);
+            File remoteBlob = join(remoteBlobsDir, blobHash);
+            if (!remoteBlob.exists()) {
+                writeContents(remoteBlob, readContents(localBlob));
+            }
+        }
+        /* Move remote branch pointers */
+        File remoteBranch = join(remoteBranchesDir, remoteBranchName);
+        writeContents(remoteBranch, headCommitHash);
     }
 }
 
