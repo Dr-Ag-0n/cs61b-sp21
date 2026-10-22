@@ -899,18 +899,28 @@ public class Repository implements Serializable {
                     String blobHash = remote.returnTrack(file);
                     allBlobs.add(blobHash);
                 }
-                // TODO
-                writeContents(remoteCommit, readContents(localCommit));
+                writeContents(localCommit, readContents(remoteCommit));
             }
         }
         /* Copy missing blobs */
         for (String blobHash: allBlobs) {
-            File localBlob = join(BLOBS_DIR, blobHash);
             File remoteBlob = join(remoteBlobsDir, blobHash);
+            File localBlob = join(BLOBS_DIR, blobHash);
             if (!remoteBlob.exists()) {
-                writeContents(remoteBlob, readContents(localBlob));
+                writeContents(localBlob, readContents(remoteBlob));
             }
         }
+        /* Add remote's branch directory and
+         * add or update remote's master pointer
+         */
+        File branchDir = join(BRANCHES_DIR, remoteBranchName);
+        if (!branchDir.exists()) {
+            branchDir.mkdir();
+        }
+        File remoteMaster = join(branchDir, "master");
+        writeContents(remoteMaster, remoteBranchCommit);
     }
+
+    public static void pull(String remoteName, String remoteBranchName) {}
 }
 
