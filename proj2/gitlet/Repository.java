@@ -798,30 +798,27 @@ public class Repository implements Serializable {
 
     /* Remote section */
     public static void addRemote(String remoteName, String remoteAddress) {
-        File remoteBranchDir = join(REMOTE_DIR, remoteName);
-        if (remoteBranchDir.exists()) {
+        File remote = join(REMOTE_DIR, remoteName);
+        if (remote.exists()) {
             System.out.println("A remote with that name already exists.");
             System.exit(0);
         }
-        remoteBranchDir.mkdir();
-        File address = join(remoteBranchDir, ".address");
-        writeContents(address, remoteAddress);
+        writeContents(remote, remoteAddress);
     }
 
     public static void rmRemote(String remoteName) {
-        File remoteBranchDir = join(REMOTE_DIR, remoteName);
-        if (!remoteBranchDir.exists()) {
+        File remote = join(REMOTE_DIR, remoteName);
+        if (!remote.exists()) {
             System.out.println("A remote with that name does not exist.");
             System.exit(0);
         }
-        remoteBranchDir.delete();
+        remote.delete();
     }
 
     public static void push(String remoteName, String remoteBranchName) {
         /* Failure case */
-        File remoteBranchDir = join(REMOTE_DIR, remoteName);
-        File remoteAddress = join(remoteBranchDir, ".address");
-        String address = readContentsAsString(remoteAddress);
+        File remote = join(REMOTE_DIR, remoteName);
+        String address = readContentsAsString(remote);
         File remoteGitletDir = new File(address);
         if (!remoteGitletDir.exists()) {
             System.out.println("Remote directory not found.");
@@ -863,10 +860,6 @@ public class Repository implements Serializable {
         /* Move remote branch pointers */
         File remoteBranch = join(remoteBranchesDir, remoteBranchName);
         writeContents(remoteBranch, headCommitHash);
-    }
-
-    public static void fetch(String remoteName, String remoteBranchName) {
-
     }
 }
 
