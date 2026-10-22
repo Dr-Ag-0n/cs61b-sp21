@@ -594,7 +594,7 @@ public class Repository implements Serializable {
         writeContents(head, commitHash);
     }
 
-    public static void merge(String branchName) {
+    public static void merge(File branchDir, String branchName) {
         /* Failure case */
         List<String> additionFiles = plainFilenamesIn(STAGED_FOR_ADDITION);
         List<String> removalFiles = plainFilenamesIn(STAGED_FOR_REMOVAL);
@@ -602,7 +602,7 @@ public class Repository implements Serializable {
             System.out.println("You have uncommitted changes.");
             System.exit(0);
         }
-        File branch = join(BRANCHES_DIR, branchName);
+        File branch = join(branchDir, branchName);
         if (!branch.exists()) {
             System.out.println("A branch with that name does not exist.");
             System.exit(0);
@@ -658,6 +658,10 @@ public class Repository implements Serializable {
         if (hasConflict) {
             System.out.println("Encountered a merge conflict.");
         }
+    }
+
+    public static void merge(String branchName) {
+        merge(BRANCHES_DIR, branchName);
     }
 
     private static boolean execMerge(MergeAction mergeAction, String fileName,
@@ -913,14 +917,18 @@ public class Repository implements Serializable {
         /* Add remote's branch directory and
          * add or update remote's master pointer
          */
-        File branchDir = join(BRANCHES_DIR, remoteBranchName);
+        File branchDir = join(BRANCHES_DIR, remoteName);
         if (!branchDir.exists()) {
             branchDir.mkdir();
         }
-        File remoteMaster = join(branchDir, "master");
-        writeContents(remoteMaster, remoteBranchCommit);
+        File remoteBranch = join(branchDir, remoteBranchName);
+        writeContents(remoteBranch, remoteBranchCommit);
     }
 
-    public static void pull(String remoteName, String remoteBranchName) {}
+    public static void pull(String remoteName, String remoteBranchName) {
+        fetch(remoteName, remoteBranchName);
+        File remoteBranchDir = join(BRANCHES_DIR, remoteName);
+        merge(remoteBranchDir, remoteBranchName);
+    }
 }
 
