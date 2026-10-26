@@ -845,7 +845,7 @@ public class Repository implements Serializable {
         File remoteBranchesDir = join(address, "Branches");
         File remoteCommitsDir = join(address, "Commits");
         File remoteBlobsDir = join(address, "Blobs");
-        String remoteCommitHash = returnBranchCommitHash(remoteBranchName, remoteGitletDir);
+        String remoteCommitHash = returnBranchCommitHash(remoteBranchName, remoteBranchesDir);
         String headCommitHash = returnBranchCommitHash(returnHeadName());
         Set<String> allParents = returnAllParents(headCommitHash);
         if (!allParents.contains(remoteCommitHash)) {
