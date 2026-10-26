@@ -456,14 +456,13 @@ public class Repository implements Serializable {
     }
 
     /** Return the commit's hash that given branch points */
-    private static String returnBranchCommitHash(String branchName, File gitletDir) {
-        File branchesDir = join(gitletDir, "Branches");
+    private static String returnBranchCommitHash(String branchName, File branchesDir) {
         File branch = join(branchesDir, branchName);
         return readContentsAsString(branch);
     }
 
     private static String returnBranchCommitHash(String branchName) {
-        return returnBranchCommitHash(branchName, GITLET_DIR);
+        return returnBranchCommitHash(branchName, BRANCHES_DIR);
     }
 
     /** Return files' name that given commit tracks */
@@ -594,7 +593,7 @@ public class Repository implements Serializable {
         writeContents(head, commitHash);
     }
 
-    public static void merge(File branchDir, String branchName) {
+    public static void merge(String branchName, File branchDir) {
         /* Failure case */
         List<String> additionFiles = plainFilenamesIn(STAGED_FOR_ADDITION);
         List<String> removalFiles = plainFilenamesIn(STAGED_FOR_REMOVAL);
@@ -608,11 +607,13 @@ public class Repository implements Serializable {
             System.exit(0);
         }
         String curBranchName = returnHeadName();
-        if (curBranchName.equals(branchName)) {
-            System.out.println("Cannot merge a branch with itself.");
-            System.exit(0);
+        if (branchDir.equals(BRANCHES_DIR)) {
+            if (curBranchName.equals(branchName)) {
+                System.out.println("Cannot merge a branch with itself.");
+                System.exit(0);
+            }
         }
-        String branchCommitHash = returnBranchCommitHash(branchName);
+        String branchCommitHash = returnBranchCommitHash(branchName, branchDir);
         File branchCommitFile = join(COMMITS_DIR, branchCommitHash);
         Commit branchCommit = readObject(branchCommitFile, Commit.class);
         /* Untracked files checking */
@@ -636,7 +637,7 @@ public class Repository implements Serializable {
         }
         hasUntrackedConflict(affectedFiles);
         /* Two special cases */
-        String splitCommitHash = findSplitCommit(branchName);
+        String splitCommitHash = findSplitCommit(branchName, branchDir);
         String headCommitHash = returnBranchCommitHash(returnHeadName());
         if (splitCommitHash.equals(branchCommitHash)) {
             System.out.println("Given branch is an ancestor of the current branch.");
@@ -653,15 +654,19 @@ public class Repository implements Serializable {
                     branchCommit.returnTrack(fileName));
             hasConflict = execMerge(out, fileName, head.returnTrack(fileName), branchCommit.returnTrack(fileName));
         }
-        String message = "Merged " + branchName + " into " + curBranchName + ".";
-        makeCommit(message, returnBranchCommitHash(branchName));
+        String wholeBranchName = branchName;
+        if (!branchDir.equals(BRANCHES_DIR)) {
+            wholeBranchName = branchDir.getName() + "/" + branchName;
+        }
+        String message = "Merged " + wholeBranchName + " into " + curBranchName + ".";
+        makeCommit(message, returnBranchCommitHash(branchName, branchDir));
         if (hasConflict) {
             System.out.println("Encountered a merge conflict.");
         }
     }
 
     public static void merge(String branchName) {
-        merge(BRANCHES_DIR, branchName);
+        merge(branchName, BRANCHES_DIR);
     }
 
     private static boolean execMerge(MergeAction mergeAction, String fileName,
@@ -746,9 +751,9 @@ public class Repository implements Serializable {
     /** Find the split point's commit hash
      *  between HEAD and given branch's name.
      */
-    private static String findSplitCommit(String givenBranch) {
+    private static String findSplitCommit(String givenBranch, File branchesDir) {
         Set<String> allAncestors = returnAllParents(returnBranchCommitHash(returnHeadName()));
-        allAncestors.retainAll(returnAllParents(returnBranchCommitHash(givenBranch)));
+        allAncestors.retainAll(returnAllParents(returnBranchCommitHash(givenBranch, branchesDir)));
         Set<String> candidates = new HashSet<>(allAncestors);
         for (String ancestor: allAncestors) {
             File c = join(COMMITS_DIR, ancestor);
@@ -761,6 +766,10 @@ public class Repository implements Serializable {
             }
         }
         return candidates.iterator().next();
+    }
+
+    private static String findSplitCommit(String givenBranch) {
+        return findSplitCommit(givenBranch, BRANCHES_DIR);
     }
 
     private static Set<String> returnAllParents(String startCommitId, File gitletDir) {
@@ -928,7 +937,7 @@ public class Repository implements Serializable {
     public static void pull(String remoteName, String remoteBranchName) {
         fetch(remoteName, remoteBranchName);
         File remoteBranchDir = join(BRANCHES_DIR, remoteName);
-        merge(remoteBranchDir, remoteBranchName);
+        merge(remoteBranchName, remoteBranchDir);
     }
 }
 
